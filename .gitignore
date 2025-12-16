@@ -1,0 +1,5 @@
+venv
+ipynb
+__pycache__
+.DS_Store
+snek_stats.json
