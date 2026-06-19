@@ -1,4 +1,5 @@
 import pygame
+import src.core.constants as constants
 import src.core.state as state
 
 def draw_cube(x, y, size, color, is_head=False):
@@ -29,3 +30,13 @@ def draw_cube(x, y, size, color, is_head=False):
         
         pygame.draw.line(state.dis, shadow, (x + 1, y + size-1), (x + size-1, y + size-1), 1)
         pygame.draw.line(state.dis, shadow, (x + size-1, y + 1), (x + size-1, y + size-1), 1)
+
+def draw_grid():
+    """Draw a subtle grid aligned with snake_block size."""
+    grid_size = constants.snake_block
+    
+    for x in range(0, constants.dis_width, grid_size):
+        pygame.draw.line(state.dis, constants.grid_color, (x, constants.GAME_AREA_TOP), (x, constants.dis_height), 1)
+    
+    for y in range(constants.GAME_AREA_TOP, constants.dis_height, grid_size):
+        pygame.draw.line(state.dis, constants.grid_color, (0, y), (constants.dis_width, y), 1)

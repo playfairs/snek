@@ -10,6 +10,7 @@ import src.ui.score as score_ui
 import src.ui.menus as menus
 import src.render.snake_renderer as snake_renderer
 import src.render.powerup_renderer as powerup_renderer
+import src.render.cube as cube
 import src.game.food as food
 import src.game.powerups as powerups
 
@@ -18,6 +19,13 @@ def gameLoop():
     game_close = False
     
     original_speed = constants.snake_speed
+    
+    if state.difficulty == 'easy':
+        original_speed = 8
+    elif state.difficulty == 'hard':
+        original_speed = 15
+    else:
+        original_speed = 10
     
     player_score = 0
     apples_eaten = 0
@@ -29,8 +37,8 @@ def gameLoop():
     stats.load_stats()
     stats.game_stats['games_played'] += 1
 
-    x1 = (constants.dis_width // (2 * constants.snake_block)) * constants.snake_block
-    y1 = ((constants.dis_height - constants.GAME_AREA_TOP) // (2 * constants.snake_block)) * constants.snake_block + constants.GAME_AREA_TOP
+    x1 = int((constants.dis_width // (2 * constants.snake_block)) * constants.snake_block)
+    y1 = int(((constants.dis_height - constants.GAME_AREA_TOP) // (2 * constants.snake_block)) * constants.snake_block + constants.GAME_AREA_TOP)
     x1_change = 0
     y1_change = 0
     
@@ -110,7 +118,14 @@ def gameLoop():
 
         x1 += x1_change
         y1 += y1_change
+        
+        x1 = int(x1)
+        y1 = int(y1)
+        
         state.dis.fill(constants.black)
+        
+        cube.draw_grid()
+        
         pulse = (pygame.time.get_ticks() % 1000) / 1000.0
         pulse_size = int(2 * (0.5 + 0.5 * math.sin(pulse * 2 * math.pi)))
         
@@ -149,14 +164,16 @@ def gameLoop():
         if len(snake_List) > Length_of_snake:
             del snake_List[0]
 
-        if Length_of_snake > 1:
+        if Length_of_snake > 1 and powerup_active != 'invincible':
             for x in snake_List[:-1]:
                 if x == snake_Head:
                     game_close = True
 
         snake_renderer.our_snake(constants.snake_block, snake_List, powerup_active)
         
-        score_ui.your_score(Length_of_snake - 1, stats.game_stats['high_score'])
+        score_ui.your_score(Length_of_snake - 1, stats.game_stats['high_score'], 
+                           Length_of_snake, apples_eaten, current_speed,
+                           powerup_active, powerup_end_time)
 
         pygame.display.update()
 

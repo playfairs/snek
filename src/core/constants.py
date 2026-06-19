@@ -9,6 +9,8 @@ green = (0, 128, 0)
 light_green = (144, 238, 144)
 light_red = (255, 182, 193)
 
+grid_color = (32, 32, 32)
+
 POWERUP_TYPES = ['speed_boost', 'slow_mo', 'double_points', 'invincible']
 POWERUP_COLORS = {
     'speed_boost': (0, 191, 255),
