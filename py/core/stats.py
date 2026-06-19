@@ -1,6 +1,6 @@
 import json
 import os
-import src.core.state as state
+import py.core.state as state
 
 game_stats = {
     'high_score': 0,

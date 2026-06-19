@@ -1,6 +1,6 @@
 import pygame
-import src.core.constants as constants
-import src.core.state as state
+import py.core.constants as constants
+import py.core.state as state
 
 def show_message(msg, color, y_displace=0, size="large"):
     if size == "small":

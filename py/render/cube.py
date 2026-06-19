@@ -1,6 +1,6 @@
 import pygame
-import src.core.constants as constants
-import src.core.state as state
+import py.core.constants as constants
+import py.core.state as state
 
 def draw_cube(x, y, size, color, is_head=False):
     base_r, base_g, base_b = color

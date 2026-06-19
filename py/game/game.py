@@ -2,17 +2,17 @@ import pygame
 import time
 import random
 import math
-import src.core.constants as constants
-import src.core.state as state
-import src.core.stats as stats
-import src.audio.sounds as sounds
-import src.ui.score as score_ui
-import src.ui.menus as menus
-import src.render.snake_renderer as snake_renderer
-import src.render.powerup_renderer as powerup_renderer
-import src.render.cube as cube
-import src.game.food as food
-import src.game.powerups as powerups
+import py.core.constants as constants
+import py.core.state as state
+import py.core.stats as stats
+import py.audio.sounds as sounds
+import py.ui.score as score_ui
+import py.ui.menus as menus
+import py.render.snake_renderer as snake_renderer
+import py.render.powerup_renderer as powerup_renderer
+import py.render.cube as cube
+import py.game.food as food
+import py.game.powerups as powerups
 
 def gameLoop():
     game_over = False

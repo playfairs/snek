@@ -1,6 +1,6 @@
 import pygame
-import src.core.constants as constants
-import src.core.state as state
+import py.core.constants as constants
+import py.core.state as state
 
 def text_objects(text, font, color=constants.white):
     text_surface = font.render(text, True, color)

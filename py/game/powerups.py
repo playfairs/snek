@@ -1,6 +1,6 @@
 import random
 import time
-import src.core.constants as constants
+import py.core.constants as constants
 
 def spawn_powerup():
     def get_random_position():

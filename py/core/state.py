@@ -6,8 +6,8 @@ project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(_
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-import src.core.constants as constants
-import src.core.stats as stats
+import py.core.constants as constants
+import py.core.stats as stats
 
 def get_asset_path(relative_path):
     """Get absolute path to asset file relative to project root."""

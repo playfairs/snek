@@ -6,12 +6,12 @@ project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-from src.core.constants import dis_width, dis_height
-from src.core.state import init_display, init_fonts, init_clock, init_settings, dis
-from src.core.stats import load_stats
-from src.audio.sounds import init_sounds
-from src.ui.menus import main_menu
-from src.game.game import gameLoop
+from py.core.constants import dis_width, dis_height
+from py.core.state import init_display, init_fonts, init_clock, init_settings, dis
+from py.core.stats import load_stats
+from py.audio.sounds import init_sounds
+from py.ui.menus import main_menu
+from py.game.game import gameLoop
 
 if __name__ == "__main__":
     pygame.init()

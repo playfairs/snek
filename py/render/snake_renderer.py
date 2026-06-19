@@ -1,8 +1,8 @@
 import pygame
 import math
-import src.core.constants as constants
-import src.core.state as state
-import src.render.cube as cube
+import py.core.constants as constants
+import py.core.state as state
+import py.render.cube as cube
 
 def our_snake(snake_block, snake_list, powerup_active=None):
     if not snake_list:

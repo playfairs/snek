@@ -1,7 +1,7 @@
 import pygame
 import math
-import src.core.constants as constants
-import src.core.state as state
+import py.core.constants as constants
+import py.core.state as state
 
 def draw_powerup(powerup):
     if not powerup['active']:

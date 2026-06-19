@@ -1,5 +1,5 @@
 import pygame
-import src.core.state as state
+import py.core.state as state
 
 powerup_sound = None
 

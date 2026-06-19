@@ -1,6 +1,6 @@
 import pygame
-import src.core.constants as constants
-import src.core.state as state
+import py.core.constants as constants
+import py.core.state as state
 
 def draw_powerup_indicator(powerup_type, time_left, x, y):
     powerup_display = {

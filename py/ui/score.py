@@ -1,8 +1,8 @@
 import pygame
 import time
-import src.core.constants as constants
-import src.core.state as state
-import src.ui.powerup_indicator as powerup_indicator
+import py.core.constants as constants
+import py.core.state as state
+import py.ui.powerup_indicator as powerup_indicator
 
 def your_score(score, high_score=None, snake_length=0, apples_collected=0, 
                current_speed=10, powerup_active=None, powerup_end_time=None):

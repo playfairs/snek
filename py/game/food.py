@@ -1,5 +1,5 @@
 import random
-import src.core.constants as constants
+import py.core.constants as constants
 
 def get_random_food_position():
     while True:

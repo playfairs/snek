@@ -1,10 +1,10 @@
 import pygame
 import math
-import src.core.constants as constants
-import src.core.state as state
-import src.ui.buttons as buttons
-import src.ui.messages as messages
-import src.core.stats as stats
+import py.core.constants as constants
+import py.core.state as state
+import py.ui.buttons as buttons
+import py.ui.messages as messages
+import py.core.stats as stats
 
 def settings_menu():
     """Display settings menu with configurable options."""
