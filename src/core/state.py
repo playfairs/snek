@@ -7,6 +7,7 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 import src.core.constants as constants
+import src.core.stats as stats
 
 def get_asset_path(relative_path):
     """Get absolute path to asset file relative to project root."""
@@ -14,7 +15,17 @@ def get_asset_path(relative_path):
 
 current_skin = 'default'
 sound_enabled = True
+music_enabled = True
+volume = 0.7
 difficulty = 'normal'
+
+def init_settings():
+    global current_skin, sound_enabled, music_enabled, volume
+    stats.load_stats()
+    current_skin = stats.game_stats.get('snake_skin', 'default')
+    sound_enabled = stats.game_stats.get('sound_enabled', True)
+    music_enabled = stats.game_stats.get('music_enabled', True)
+    volume = stats.game_stats.get('volume', 0.7)
 
 dis = None
 clock = None

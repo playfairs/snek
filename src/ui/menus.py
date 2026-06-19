@@ -4,12 +4,13 @@ import src.core.constants as constants
 import src.core.state as state
 import src.ui.buttons as buttons
 import src.ui.messages as messages
+import src.core.stats as stats
 
 def settings_menu():
     """Display settings menu with configurable options."""
     global state
     
-    options = ['Snake Skin', 'Sound', 'Difficulty', 'Back']
+    options = ['Snake Skin', 'Sound', 'Music', 'Volume', 'Difficulty', 'Back']
     current_option = 0
     
     skin_options = list(constants.SNAKE_SKINS.keys())
@@ -18,15 +19,26 @@ def settings_menu():
     sound_options = ['On', 'Off']
     current_sound_index = 0 if state.sound_enabled else 1
     
+    music_options = ['On', 'Off']
+    current_music_index = 0 if state.music_enabled else 1
+    
+    volume_options = [0.3, 0.5, 0.7, 1.0]
+    current_volume_index = volume_options.index(state.volume) if state.volume in volume_options else 2
+    
     difficulty_options = ['Easy', 'Normal', 'Hard']
     difficulty_index = {'easy': 0, 'normal': 1, 'hard': 2}.get(state.difficulty, 1)
     
     running = True
     while running:
-        state.dis.fill(constants.light_gray)
+        # Modern gradient background
+        state.dis.fill(constants.black)
+        for i in range(state.dis_height):
+            alpha = int(20 * (i / state.dis_height))
+            color = (15 + alpha, 15 + alpha, 20 + alpha)
+            pygame.draw.line(state.dis, color, (0, i), (state.dis_width, i))
         
         title_y = state.dis_height // 4
-        title = state.large_font.render("SETTINGS", True, constants.blue)
+        title = state.large_font.render("SETTINGS", True, constants.accent)
         title_rect = title.get_rect(center=(state.dis_width//2, title_y))
         state.dis.blit(title, title_rect)
         
@@ -34,13 +46,17 @@ def settings_menu():
         option_height = 50
         
         for i, option in enumerate(options):
-            option_color = constants.blue if i == current_option else constants.dark_gray
+            option_color = constants.white if i == current_option else constants.light_gray
             option_text = option
             
             if option == 'Snake Skin':
                 option_text = f"Snake Skin: {skin_options[current_skin_index]}"
             elif option == 'Sound':
                 option_text = f"Sound: {sound_options[current_sound_index]}"
+            elif option == 'Music':
+                option_text = f"Music: {music_options[current_music_index]}"
+            elif option == 'Volume':
+                option_text = f"Volume: {int(volume_options[current_volume_index] * 100)}%"
             elif option == 'Difficulty':
                 option_text = f"Difficulty: {difficulty_options[difficulty_index]}"
             
@@ -50,13 +66,13 @@ def settings_menu():
             if i == current_option:
                 bg_rect = pygame.Rect(option_rect.x - 20, option_rect.y - 10, 
                                     option_rect.width + 40, option_rect.height + 20)
-                pygame.draw.rect(state.dis, constants.white, bg_rect)
-                pygame.draw.rect(state.dis, constants.dark_gray, bg_rect, 2)
+                pygame.draw.rect(state.dis, constants.dark_gray, bg_rect)
+                pygame.draw.rect(state.dis, constants.accent, bg_rect, 2)
             
             state.dis.blit(option_surf, option_rect)
         
         instr_text = "Use Arrow Keys or WASD to navigate, Enter to select, ESC to go back"
-        instr_surf = state.font_style.render(instr_text, True, constants.dark_gray)
+        instr_surf = state.font_style.render(instr_text, True, constants.light_gray)
         instr_rect = instr_surf.get_rect(center=(state.dis_width//2, state.dis_height - 50))
         state.dis.blit(instr_surf, instr_rect)
         
@@ -77,9 +93,23 @@ def settings_menu():
                     if options[current_option] == 'Snake Skin':
                         current_skin_index = (current_skin_index + 1) % len(skin_options)
                         state.current_skin = skin_options[current_skin_index]
+                        stats.game_stats['snake_skin'] = state.current_skin
+                        stats.save_stats()
                     elif options[current_option] == 'Sound':
                         current_sound_index = (current_sound_index + 1) % len(sound_options)
                         state.sound_enabled = (current_sound_index == 0)
+                        stats.game_stats['sound_enabled'] = state.sound_enabled
+                        stats.save_stats()
+                    elif options[current_option] == 'Music':
+                        current_music_index = (current_music_index + 1) % len(music_options)
+                        state.music_enabled = (current_music_index == 0)
+                        stats.game_stats['music_enabled'] = state.music_enabled
+                        stats.save_stats()
+                    elif options[current_option] == 'Volume':
+                        current_volume_index = (current_volume_index + 1) % len(volume_options)
+                        state.volume = volume_options[current_volume_index]
+                        stats.game_stats['volume'] = state.volume
+                        stats.save_stats()
                     elif options[current_option] == 'Difficulty':
                         difficulty_index = (difficulty_index + 1) % len(difficulty_options)
                         state.difficulty = difficulty_options[difficulty_index].lower()
@@ -92,7 +122,13 @@ def settings_menu():
 
 def game_over_screen(score):
     while True:
-        state.dis.fill(constants.light_gray)
+        state.dis.fill(constants.black)
+        
+        # Modern gradient background
+        for i in range(state.dis_height):
+            alpha = int(20 * (i / state.dis_height))
+            color = (15 + alpha, 15 + alpha, 20 + alpha)
+            pygame.draw.line(state.dis, color, (0, i), (state.dis_width, i))
         
         title_y = state.dis_height // 3
         shadow_offset = 3
@@ -100,24 +136,28 @@ def game_over_screen(score):
         pulse = (pygame.time.get_ticks() % 1500) / 1500.0
         title_scale = 1.0 + 0.05 * math.sin(pulse * 2 * math.pi)
         
-        title_shadow = state.large_font.render("GAME OVER", True, constants.dark_gray)
-        title_shadow_rect = title_shadow.get_rect(center=(state.dis_width//2 + shadow_offset, title_y + shadow_offset))
-        state.dis.blit(title_shadow, title_shadow_rect)
+        # Modern title with glow
+        title_glow = state.large_font.render("GAME OVER", True, constants.red)
+        glow_rect = title_glow.get_rect(center=(state.dis_width//2 + shadow_offset, title_y + shadow_offset))
+        state.dis.blit(title_glow, glow_rect)
         
-        title = state.large_font.render("GAME OVER", True, constants.red)
+        title = state.large_font.render("GAME OVER", True, constants.white)
         title_rect = title.get_rect(center=(state.dis_width//2, title_y))
         state.dis.blit(title, title_rect)
         
         score_y = title_y + 80
         score_text = f"Final Score: {score}"
-        score_surface = state.score_font.render(score_text, True, constants.black)
+        score_surface = state.score_font.render(score_text, True, constants.white)
         score_rect = score_surface.get_rect(center=(state.dis_width//2, score_y))
         
-        bg_padding = 30
+        # Modern score background
+        bg_padding = 40
         score_bg = pygame.Rect(score_rect.x - bg_padding, score_rect.y - bg_padding//2, 
                              score_rect.width + bg_padding*2, score_rect.height + bg_padding)
-        pygame.draw.rect(state.dis, constants.white, score_bg)
-        pygame.draw.rect(state.dis, constants.dark_gray, score_bg, 2)
+        
+        # Gradient background for score
+        pygame.draw.rect(state.dis, constants.dark_gray, score_bg)
+        pygame.draw.rect(state.dis, constants.accent, score_bg, 2)
         pygame.draw.rect(state.dis, constants.light_gray, score_bg, 1)
         state.dis.blit(score_surface, score_rect)
         
@@ -166,8 +206,6 @@ def game_over_screen(score):
         state.clock.tick(15)
 
 def main_menu(game_loop_func):
-    content_rect = messages.show_message("SNAKE GAME", constants.green, -100, "large")
-    
     button_y = state.dis_height / 2
     button_height = 50
     button_width = min(200, state.dis_width // 3)
@@ -179,16 +217,28 @@ def main_menu(game_loop_func):
     
     running = True
     while running:
-        state.dis.fill(constants.light_gray)
+        # Modern gradient background
+        state.dis.fill(constants.black)
+        for i in range(state.dis_height):
+            alpha = int(25 * (i / state.dis_height))
+            color = (15 + alpha, 15 + alpha, 20 + alpha)
+            pygame.draw.line(state.dis, color, (0, i), (state.dis_width, i))
         
+        # Animated title with modern glow
         pulse = (pygame.time.get_ticks() % 2000) / 2000.0
         title_color = (
-            int(constants.blue[0] + 50 * math.sin(pulse * 2 * math.pi)),
-            int(constants.blue[1] + 50 * math.sin(pulse * 2 * math.pi)),
-            int(constants.blue[2] + 50 * math.sin(pulse * 2 * math.pi))
+            max(0, min(255, int(constants.blue[0] + 50 * math.sin(pulse * 2 * math.pi)))),
+            max(0, min(255, int(constants.blue[1] + 50 * math.sin(pulse * 2 * math.pi)))),
+            max(0, min(255, int(constants.blue[2] + 50 * math.sin(pulse * 2 * math.pi))))
         )
         
-        messages.show_message("SNAKE GAME", title_color, -100, "large")
+        title_glow = state.large_font.render("SNAKE GAME", True, title_color)
+        glow_rect = title_glow.get_rect(center=(state.dis_width//2 + 2, state.dis_height // 3 + 2))
+        state.dis.blit(title_glow, glow_rect)
+        
+        title = state.large_font.render("SNAKE GAME", True, constants.white)
+        title_rect = title.get_rect(center=(state.dis_width//2, state.dis_height // 3))
+        state.dis.blit(title, title_rect)
         
         play_clicked = buttons.button("Play", 
                             start_x, 

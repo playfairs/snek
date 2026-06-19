@@ -7,7 +7,7 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 from src.core.constants import dis_width, dis_height
-from src.core.state import init_display, init_fonts, init_clock, dis
+from src.core.state import init_display, init_fonts, init_clock, init_settings, dis
 from src.core.stats import load_stats
 from src.audio.sounds import init_sounds
 from src.ui.menus import main_menu
@@ -20,6 +20,7 @@ if __name__ == "__main__":
     init_display()
     init_fonts()
     init_clock()
+    init_settings()
     init_sounds()
     
     pygame.display.set_caption('Snek')

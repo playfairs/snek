@@ -7,7 +7,11 @@ game_stats = {
     'total_apples': 0,
     'games_played': 0,
     'powerups_collected': 0,
-    'best_time': 0
+    'best_time': 0,
+    'snake_skin': 'default',
+    'sound_enabled': True,
+    'music_enabled': True,
+    'volume': 0.7
 }
 
 def get_stats_file_path():
