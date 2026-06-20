@@ -26,6 +26,8 @@ static Color get_powerup_color(PowerupType type) {
         case POWERUP_SLOW_MO: return (Color){180, 100, 255};
         case POWERUP_DOUBLE_POINTS: return (Color){255, 200, 80};
         case POWERUP_INVINCIBLE: return (Color){255, 100, 200};
+        case POWERUP_PATHFIND: return (Color){100, 255, 150};
+        case POWERUP_FRENZY: return (Color){255, 150, 50};
         default: return (Color){WHITE_R, WHITE_G, WHITE_B};
     }
 }
@@ -86,7 +88,7 @@ void draw_cube(SDL_Renderer* renderer, int x, int y, int size, Color color, int 
 }
 
 void draw_grid(SDL_Renderer* renderer) {
-    SDL_SetRenderDrawColor(renderer, GRID_COLOR_R, GRID_COLOR_G, GRID_COLOR_B, 255);
+    SDL_SetRenderDrawColor(renderer, 35, 35, 45, 255);
     
     for (int x = 0; x < DIS_WIDTH; x += SNAKE_BLOCK) {
         SDL_RenderDrawLine(renderer, x, GAME_AREA_TOP, x, DIS_HEIGHT);
@@ -206,26 +208,19 @@ void draw_hud(SDL_Renderer* renderer, TTF_Font* score_font, TTF_Font* button_fon
               int score, int high_score, int snake_length, int apples_collected,
               int current_speed, PowerupType active_powerup, double powerup_end_time) {
     SDL_Rect header_rect = {0, 0, DIS_WIDTH, HEADER_HEIGHT};
-    SDL_SetRenderDrawColor(renderer, BLACK_R, BLACK_G, BLACK_B, 255);
+    SDL_SetRenderDrawColor(renderer, 25, 25, 35, 255);
     SDL_RenderFillRect(renderer, &header_rect);
     
-    for (int i = 0; i < HEADER_HEIGHT; i++) {
-        int alpha = (int)(30 * ((double)i / HEADER_HEIGHT));
-        SDL_SetRenderDrawColor(renderer, 40 + alpha, 40 + alpha, 50 + alpha, 255);
-        SDL_RenderDrawLine(renderer, 0, i, DIS_WIDTH, i);
-    }
-    
-    SDL_SetRenderDrawColor(renderer, ACCENT_R, ACCENT_G, ACCENT_B, 255);
-    SDL_RenderDrawLine(renderer, 0, 0, DIS_WIDTH, 0);
-    SDL_RenderDrawLine(renderer, 0, HEADER_HEIGHT - 1, DIS_WIDTH, HEADER_HEIGHT - 1);
+    SDL_SetRenderDrawColor(renderer, 70, 130, 180, 255);
+    SDL_RenderDrawLine(renderer, 0, HEADER_HEIGHT - 2, DIS_WIDTH, HEADER_HEIGHT - 2);
     
     char score_text[32];
     snprintf(score_text, sizeof(score_text), "SCORE: %d", score);
     
     SDL_Color white = {WHITE_R, WHITE_G, WHITE_B, 255};
-    SDL_Color accent = {ACCENT_R, ACCENT_G, ACCENT_B, 255};
+    SDL_Color accent = {100, 180, 255, 255};
     
-    SDL_Surface* score_surf = TTF_RenderText_Blended(score_font, score_text, white);
+    SDL_Surface* score_surf = TTF_RenderText_Blended(score_font, score_text, accent);
     SDL_Texture* score_tex = SDL_CreateTextureFromSurface(renderer, score_surf);
     SDL_Rect score_rect = {20, 25, score_surf->w, score_surf->h};
     SDL_RenderCopy(renderer, score_tex, NULL, &score_rect);
@@ -281,7 +276,7 @@ void draw_hud(SDL_Renderer* renderer, TTF_Font* score_font, TTF_Font* button_fon
         double time_left = powerup_end_time - current_time;
         
         if (time_left > 0) {
-            const char* powerup_names[] = {"SPEED BOOST", "SLOW MOTION", "2X POINTS", "INVINCIBLE"};
+            const char* powerup_names[] = {"SPEED BOOST", "SLOW MOTION", "2X POINTS", "INVINCIBLE", "PATHFIND", "FRENZY"};
             const char* name = powerup_names[active_powerup];
             
             char time_text[32];
@@ -304,45 +299,38 @@ void draw_hud(SDL_Renderer* renderer, TTF_Font* score_font, TTF_Font* button_fon
             SDL_DestroyTexture(time_tex);
         }
     }
-    
-    SDL_SetRenderDrawColor(renderer, DARK_GRAY_R, DARK_GRAY_G, DARK_GRAY_B, 255);
-    SDL_RenderDrawLine(renderer, DIS_WIDTH / 2, 8, DIS_WIDTH / 2, HEADER_HEIGHT - 8);
 }
 
 void draw_main_menu(SDL_Renderer* renderer, TTF_Font* large_font, TTF_Font* button_font) {
-    for (int i = 0; i < DIS_HEIGHT; i++) {
-        int alpha = (int)(25 * ((double)i / DIS_HEIGHT));
-        SDL_SetRenderDrawColor(renderer, 15 + alpha, 15 + alpha, 20 + alpha, 255);
-        SDL_RenderDrawLine(renderer, 0, i, DIS_WIDTH, i);
-    }
+    SDL_SetRenderDrawColor(renderer, 18, 18, 28, 255);
+    SDL_RenderClear(renderer);
     
-    double pulse = (SDL_GetTicks() % 2000) / 2000.0;
-    int title_color_r = BLUE_R + (int)(50 * sin(pulse * 2 * M_PI));
-    int title_color_g = BLUE_G + (int)(50 * sin(pulse * 2 * M_PI));
-    int title_color_b = BLUE_B + (int)(50 * sin(pulse * 2 * M_PI));
-    
-    SDL_Color title_color = {title_color_r, title_color_g, title_color_b, 255};
+    SDL_Color accent = {100, 180, 255, 255};
     SDL_Color white = {WHITE_R, WHITE_G, WHITE_B, 255};
+    SDL_Color gray = {140, 140, 150, 255};
     
-    SDL_Surface* title_surf = TTF_RenderText_Blended(large_font, "SNAKE GAME", white);
+    SDL_Surface* title_surf = TTF_RenderText_Blended(large_font, "SNEK", accent);
     SDL_Texture* title_tex = SDL_CreateTextureFromSurface(renderer, title_surf);
-    SDL_Rect title_rect = {(DIS_WIDTH - title_surf->w) / 2, DIS_HEIGHT / 3, title_surf->w, title_surf->h};
+    SDL_Rect title_rect = {(DIS_WIDTH - title_surf->w) / 2, DIS_HEIGHT / 6, title_surf->w, title_surf->h};
     SDL_RenderCopy(renderer, title_tex, NULL, &title_rect);
     SDL_FreeSurface(title_surf);
     SDL_DestroyTexture(title_tex);
+    
+    SDL_Surface* subtitle_surf = TTF_RenderText_Blended(button_font, "Classic Snake Game", gray);
+    SDL_Texture* subtitle_tex = SDL_CreateTextureFromSurface(renderer, subtitle_surf);
+    SDL_Rect subtitle_rect = {(DIS_WIDTH - subtitle_surf->w) / 2, DIS_HEIGHT / 6 + 50, subtitle_surf->w, subtitle_surf->h};
+    SDL_RenderCopy(renderer, subtitle_tex, NULL, &subtitle_rect);
+    SDL_FreeSurface(subtitle_surf);
+    SDL_DestroyTexture(subtitle_tex);
 }
 
 void draw_settings_menu(SDL_Renderer* renderer, TTF_Font* large_font, TTF_Font* score_font,
                         TTF_Font* button_font, GameState* state, int current_option) {
-    for (int i = 0; i < DIS_HEIGHT; i++) {
-        int alpha = (int)(20 * ((double)i / DIS_HEIGHT));
-        SDL_SetRenderDrawColor(renderer, 15 + alpha, 15 + alpha, 20 + alpha, 255);
-        SDL_RenderDrawLine(renderer, 0, i, DIS_WIDTH, i);
-    }
+    SDL_SetRenderDrawColor(renderer, 18, 18, 28, 255);
+    SDL_RenderClear(renderer);
     
-    SDL_Color accent = {ACCENT_R, ACCENT_G, ACCENT_B, 255};
+    SDL_Color accent = {100, 180, 255, 255};
     SDL_Color white = {WHITE_R, WHITE_G, WHITE_B, 255};
-    SDL_Color light_gray = {LIGHT_GRAY_R, LIGHT_GRAY_G, LIGHT_GRAY_B, 255};
     
     SDL_Surface* title_surf = TTF_RenderText_Blended(large_font, "SETTINGS", accent);
     SDL_Texture* title_tex = SDL_CreateTextureFromSurface(renderer, title_surf);
@@ -354,16 +342,13 @@ void draw_settings_menu(SDL_Renderer* renderer, TTF_Font* large_font, TTF_Font* 
 
 void draw_game_over(SDL_Renderer* renderer, TTF_Font* large_font, TTF_Font* score_font,
                    TTF_Font* button_font, int score) {
-    for (int i = 0; i < DIS_HEIGHT; i++) {
-        int alpha = (int)(20 * ((double)i / DIS_HEIGHT));
-        SDL_SetRenderDrawColor(renderer, 15 + alpha, 15 + alpha, 20 + alpha, 255);
-        SDL_RenderDrawLine(renderer, 0, i, DIS_WIDTH, i);
-    }
+    SDL_SetRenderDrawColor(renderer, 18, 18, 28, 255);
+    SDL_RenderClear(renderer);
     
-    SDL_Color red = {RED_R, RED_G, RED_B, 255};
+    SDL_Color accent = {100, 180, 255, 255};
     SDL_Color white = {WHITE_R, WHITE_G, WHITE_B, 255};
     
-    SDL_Surface* title_surf = TTF_RenderText_Blended(large_font, "GAME OVER", white);
+    SDL_Surface* title_surf = TTF_RenderText_Blended(large_font, "GAME OVER", accent);
     SDL_Texture* title_tex = SDL_CreateTextureFromSurface(renderer, title_surf);
     SDL_Rect title_rect = {(DIS_WIDTH - title_surf->w) / 2, DIS_HEIGHT / 3, title_surf->w, title_surf->h};
     SDL_RenderCopy(renderer, title_tex, NULL, &title_rect);
