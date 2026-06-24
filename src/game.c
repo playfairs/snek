@@ -110,7 +110,8 @@ void init_game(GameContext* game, GameState* state) {
     game->apples_eaten = 0;
     game->start_time = SDL_GetTicks() / 1000.0;
     game->powerup_spawn_time = game->start_time + 10 + rand() % 10;
-    game->current_speed = get_base_speed(state->settings.difficulty);
+    game->base_speed = get_base_speed(state->settings.difficulty);
+    game->current_speed = game->base_speed;
     game->status = GAME_RUNNING;
     
     state->stats.games_played++;
@@ -130,6 +131,7 @@ GameStatus game_loop(GameContext* game, GameState* state, AudioState* audio) {
         }
         
         if (game->active_powerup != POWERUP_NONE && current_time > game->powerup_end_time) {
+            remove_powerup_effect(game, game->active_powerup);
             game->active_powerup = POWERUP_NONE;
         }
         
@@ -137,12 +139,8 @@ GameStatus game_loop(GameContext* game, GameState* state, AudioState* audio) {
             game->powerup.active = 0;
         }
         
-        if (game->active_powerup == POWERUP_SPEED_BOOST) {
-            game->current_speed = 15;
-        } else if (game->active_powerup == POWERUP_SLOW_MO) {
-            game->current_speed = 5;
-        } else {
-            game->current_speed = get_base_speed(state->settings.difficulty);
+        if (game->active_powerup != POWERUP_NONE) {
+            update_powerup_effect(game, game->active_powerup);
         }
         
         while (SDL_PollEvent(&event)) {

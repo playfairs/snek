@@ -21,6 +21,7 @@ typedef struct {
     int apples_eaten;
     double start_time;
     double powerup_spawn_time;
+    int base_speed;
     int current_speed;
     GameStatus status;
 } GameContext;

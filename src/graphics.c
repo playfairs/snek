@@ -15,6 +15,14 @@ static Color get_skin_color(SnakeSkin skin, int is_head) {
             return is_head ? (Color){RED_R, RED_G, RED_B} : (Color){200, 60, 60};
         case SKIN_RAINBOW:
             return is_head ? (Color){ACCENT_R, ACCENT_G, ACCENT_B} : (Color){ACCENT2_R, ACCENT2_G, ACCENT2_B};
+        case SKIN_PURPLE:
+            return is_head ? (Color){180, 100, 255} : (Color){140, 70, 200};
+        case SKIN_GOLD:
+            return is_head ? (Color){255, 215, 0} : (Color){200, 160, 0};
+        case SKIN_CYAN:
+            return is_head ? (Color){0, 255, 255} : (Color){0, 200, 200};
+        case SKIN_NEON:
+            return is_head ? (Color){255, 0, 255} : (Color){200, 0, 200};
         default:
             return is_head ? (Color){GREEN_R, GREEN_G, GREEN_B} : (Color){60, 160, 100};
     }
@@ -117,6 +125,22 @@ void draw_snake(SDL_Renderer* renderer, Snake* snake, PowerupType active_powerup
             b = (int)(b * (0.7 + 0.3 * shimmer));
             
             base_color = (Color){r, g, b};
+        } else if (snake->skin == SKIN_NEON) {
+            double pulse = (SDL_GetTicks() % 500) / 500.0;
+            int glow = (int)(80 * (0.5 + 0.5 * sin(pulse * 2 * M_PI)));
+            base_color = (Color){
+                base_color.r + glow > 255 ? 255 : base_color.r + glow,
+                base_color.g,
+                base_color.b + glow > 255 ? 255 : base_color.b + glow
+            };
+        } else if (snake->skin == SKIN_GOLD) {
+            double shimmer = (SDL_GetTicks() % 300) / 300.0;
+            int shine = (int)(40 * (0.5 + 0.5 * sin(shimmer * 2 * M_PI)));
+            base_color = (Color){
+                base_color.r + shine > 255 ? 255 : base_color.r + shine,
+                base_color.g + shine > 255 ? 255 : base_color.g + shine,
+                base_color.b
+            };
         }
         
         Color color = apply_powerup_glow(base_color, active_powerup);
@@ -141,6 +165,22 @@ void draw_snake(SDL_Renderer* renderer, Snake* snake, PowerupType active_powerup
             b = (int)(b * (0.8 + 0.2 * shimmer));
             
             base_color = (Color){r, g, b};
+        } else if (snake->skin == SKIN_NEON) {
+            double pulse = (SDL_GetTicks() % 500) / 500.0;
+            int glow = (int)(100 * (0.5 + 0.5 * sin(pulse * 2 * M_PI)));
+            base_color = (Color){
+                base_color.r + glow > 255 ? 255 : base_color.r + glow,
+                base_color.g,
+                base_color.b + glow > 255 ? 255 : base_color.b + glow
+            };
+        } else if (snake->skin == SKIN_GOLD) {
+            double shimmer = (SDL_GetTicks() % 300) / 300.0;
+            int shine = (int)(50 * (0.5 + 0.5 * sin(shimmer * 2 * M_PI)));
+            base_color = (Color){
+                base_color.r + shine > 255 ? 255 : base_color.r + shine,
+                base_color.g + shine > 255 ? 255 : base_color.g + shine,
+                base_color.b
+            };
         }
         
         Color color = apply_powerup_glow(base_color, active_powerup);

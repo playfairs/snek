@@ -78,7 +78,11 @@ typedef enum {
     SKIN_DEFAULT,
     SKIN_BLUE,
     SKIN_RED,
-    SKIN_RAINBOW
+    SKIN_RAINBOW,
+    SKIN_PURPLE,
+    SKIN_GOLD,
+    SKIN_CYAN,
+    SKIN_NEON
 } SnakeSkin;
 
 typedef enum {

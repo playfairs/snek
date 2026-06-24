@@ -30,6 +30,13 @@ SOURCES = $(SRC_DIR)/main.c \
           $(SRC_DIR)/graphics.c \
           $(SRC_DIR)/input.c \
           $(SRC_DIR)/powerups.c \
+          $(SRC_DIR)/powerups/powerup.c \
+          $(SRC_DIR)/powerups/speedboost.c \
+          $(SRC_DIR)/powerups/slowmo.c \
+          $(SRC_DIR)/powerups/doublepoints.c \
+          $(SRC_DIR)/powerups/invincible.c \
+          $(SRC_DIR)/powerups/frenzy.c \
+          $(SRC_DIR)/powerups/pathfind.c \
           $(SRC_DIR)/audio.c
 
 OBJECTS = $(SOURCES:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
@@ -44,6 +51,10 @@ $(TARGET): $(OBJECTS)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/powerups/%.o: $(SRC_DIR)/powerups/%.c
+	@mkdir -p $(BUILD_DIR)/powerups
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:

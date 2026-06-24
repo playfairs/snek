@@ -2,8 +2,7 @@
 #define POWERUP_H
 
 #include "constants.h"
-
-typedef struct GameContext GameContext;
+#include "game.h"
 
 typedef struct {
     PowerupType type;
