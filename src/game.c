@@ -12,14 +12,40 @@
 #include "../include/items.h"
 #include "../include/audio.h"
 
-static void spawn_food(Food* food) {
+static ItemType random_fruit_type(void) {
+    int roll = rand() % 100;
+    return (roll < 55) ? ITEM_APPLE : ITEM_BANANA;
+}
+
+static void init_food(Food* food, ItemType type) {
     int max_x = DIS_WIDTH / SNAKE_BLOCK;
     int max_y = GAME_AREA_HEIGHT / SNAKE_BLOCK;
 
     food->pos.x = (rand() % max_x) * SNAKE_BLOCK;
     food->pos.y = GAME_AREA_TOP + (rand() % max_y) * SNAKE_BLOCK;
-    food->type = random_item_type();
+    food->type = type;
     food->active = 1;
+    food->spawn_time = SDL_GetTicks() / 1000.0;
+    food->lifetime = (type == ITEM_BOMB) ? 5.0 + (rand() % 6) : 0.0;
+}
+
+static void spawn_bomb(GameContext* game) {
+    init_food(&game->secondary_food, ITEM_BOMB);
+    while (game->secondary_food.pos.x == game->food.pos.x &&
+           game->secondary_food.pos.y == game->food.pos.y) {
+        init_food(&game->secondary_food, ITEM_BOMB);
+    }
+}
+
+static void maybe_spawn_bomb(GameContext* game) {
+    if (!game->secondary_food.active && random_item_type() == ITEM_BOMB) {
+        spawn_bomb(game);
+    }
+}
+
+static void spawn_primary_food(GameContext* game) {
+    init_food(&game->food, random_fruit_type());
+    maybe_spawn_bomb(game);
 }
 
 static int has_active_powerup(GameContext* game, PowerupType type) {
@@ -43,6 +69,10 @@ static int check_self_collision(Snake* snake) {
 }
 
 static int check_food_collision(Snake* snake, Food* food) {
+    if (!food->active) {
+        return 0;
+    }
+
     Position head = snake->segments[snake->length - 1];
 
     if (abs(head.x - food->pos.x) < SNAKE_BLOCK &&
@@ -98,13 +128,16 @@ void init_game(GameContext* game, GameState* state) {
     game->snake.segments[0].x = start_x;
     game->snake.segments[0].y = start_y;
 
-    spawn_food(&game->food);
-
     game->powerup.active = 0;
+    game->powerup.spawn_time = 0.0;
     game->powerup_count = 0;
+    game->secondary_food.active = 0;
     game->mode = state->settings.mode;
 
     double current_time = SDL_GetTicks() / 1000.0;
+    game->powerup_spawn_time = current_time + POWERUP_INITIAL_SPAWN_DELAY + rand() % POWERUP_SPAWN_DELAY_VARIANCE;
+
+    spawn_primary_food(game);
     game->score = 0;
     game->apples_eaten = 0;
     game->start_time = current_time;
@@ -185,6 +218,15 @@ GameStatus game_loop(GameContext* game, GameState* state, AudioState* audio) {
                 game->powerup.active = 0;
             }
 
+            if (game->secondary_food.active &&
+                current_time - game->secondary_food.spawn_time > game->secondary_food.lifetime) {
+                game->secondary_food.active = 0;
+            }
+
+            if (!game->food.active) {
+                spawn_primary_food(game);
+            }
+
             if (game->mode == MODE_TIME_ATTACK && current_time >= game->mode_end_time) {
                 game->status = GAME_OVER;
             }
@@ -209,33 +251,32 @@ GameStatus game_loop(GameContext* game, GameState* state, AudioState* audio) {
 
             if (check_food_collision(&game->snake, &game->food)) {
                 ItemType item_type = game->food.type;
-                if (item_type == ITEM_BOMB) {
-                    game->status = GAME_OVER;
-                    if (state->settings.sound_enabled && audio) {
-                        play_explosion_sound(audio, state->settings.volume);
+                game->snake.length++;
+                game->snake.segments[game->snake.length - 1] = game->snake.segments[game->snake.length - 2];
+
+                game->apples_eaten++;
+                state->stats.total_apples++;
+
+                int points = (item_type == ITEM_BANANA) ? 15 : 10;
+                for (int i = 0; i < game->powerup_count; i++) {
+                    if (game->active_powerups[i].type == POWERUP_DOUBLE_POINTS) {
+                        points *= 2;
+                        break;
                     }
-                } else {
-                    game->snake.length++;
-                    game->snake.segments[game->snake.length - 1] = game->snake.segments[game->snake.length - 2];
+                }
+                game->score += points;
 
-                    game->apples_eaten++;
-                    state->stats.total_apples++;
+                if (game->score > state->stats.high_score) {
+                    state->stats.high_score = game->score;
+                }
 
-                    int points = (item_type == ITEM_BANANA) ? 15 : 10;
-                    for (int i = 0; i < game->powerup_count; i++) {
-                        if (game->active_powerups[i].type == POWERUP_DOUBLE_POINTS) {
-                            points *= 2;
-                            break;
-                        }
-                    }
-                    game->score += points;
-
-                    if (game->score > state->stats.high_score) {
-                        state->stats.high_score = game->score;
-                    }
-
-                    save_stats(&state->stats);
-                    spawn_food(&game->food);
+                save_stats(&state->stats);
+                spawn_primary_food(game);
+            } else if (game->secondary_food.active &&
+                       check_food_collision(&game->snake, &game->secondary_food)) {
+                game->status = GAME_OVER;
+                if (state->settings.sound_enabled && audio) {
+                    play_explosion_sound(audio, state->settings.volume);
                 }
             }
 
@@ -256,9 +297,11 @@ GameStatus game_loop(GameContext* game, GameState* state, AudioState* audio) {
 
         draw_grid(state->renderer);
         draw_food(state->renderer, &game->food);
+        if (game->secondary_food.active) {
+            draw_food(state->renderer, &game->secondary_food);
+        }
 
         if (game->powerup.active) {
-            draw_powerup(state->renderer, &game->powerup);
         }
 
         int glow_active = has_active_powerup(game, POWERUP_INVINCIBLE) || has_active_powerup(game, POWERUP_PATHFIND);
