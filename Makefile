@@ -62,3 +62,13 @@ clean:
 
 run: $(TARGET)
 	./$(TARGET)
+
+PREFIX ?= /usr/local
+INSTALL = install -m 0755
+
+install: $(TARGET)
+	$(INSTALL) -d $(DESTDIR)$(PREFIX)/bin
+	$(INSTALL) $(TARGET) $(DESTDIR)$(PREFIX)/bin/snek
+
+uninstall:
+	rm -f $(DESTDIR)$(PREFIX)/bin/snek

@@ -5,14 +5,18 @@ InputAction handle_input_snake(SDL_Event* event, int current_dx, int current_dy)
     if (event->type == SDL_QUIT) {
         return INPUT_QUIT;
     }
-    
+
     if (event->type == SDL_KEYDOWN) {
         SDL_Keycode key = event->key.keysym.sym;
-        
+
+        if (key == SDLK_ESCAPE) {
+            return INPUT_PAUSE;
+        }
+
         if (key == SDLK_e && (SDL_GetModState() & KMOD_CTRL)) {
             return INPUT_PAUSE;
         }
-        
+
         if ((key == SDLK_LEFT || key == SDLK_a) && current_dx == 0) {
             return INPUT_LEFT;
         }
@@ -26,7 +30,7 @@ InputAction handle_input_snake(SDL_Event* event, int current_dx, int current_dy)
             return INPUT_DOWN;
         }
     }
-    
+
     return INPUT_NONE;
 }
 
@@ -34,13 +38,13 @@ InputAction handle_input_menu(SDL_Event* event) {
     if (event->type == SDL_QUIT) {
         return INPUT_QUIT;
     }
-    
+
     if (event->type == SDL_KEYDOWN) {
         if (event->key.keysym.sym == SDLK_ESCAPE) {
             return INPUT_QUIT;
         }
     }
-    
+
     return INPUT_NONE;
 }
 
@@ -48,10 +52,10 @@ InputAction handle_input_settings(SDL_Event* event, int* current_option, int max
     if (event->type == SDL_QUIT) {
         return INPUT_QUIT;
     }
-    
+
     if (event->type == SDL_KEYDOWN) {
         SDL_Keycode key = event->key.keysym.sym;
-        
+
         if (key == SDLK_ESCAPE) {
             return INPUT_ESCAPE;
         }
@@ -65,6 +69,6 @@ InputAction handle_input_settings(SDL_Event* event, int* current_option, int max
             return INPUT_ENTER;
         }
     }
-    
+
     return INPUT_NONE;
 }

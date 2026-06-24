@@ -17,6 +17,8 @@ typedef struct {
     Powerup powerup;
     PowerupType active_powerup;
     double powerup_end_time;
+    double mode_end_time;
+    GameMode mode;
     int score;
     int apples_eaten;
     double start_time;

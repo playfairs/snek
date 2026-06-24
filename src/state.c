@@ -21,6 +21,7 @@ void init_state(GameState* state) {
     state->settings.volume = 0.7;
     state->settings.current_skin = SKIN_DEFAULT;
     state->settings.difficulty = DIFFICULTY_NORMAL;
+    state->settings.mode = MODE_CLASSIC;
     
     load_stats(&state->stats);
     load_settings(&state->settings);
@@ -110,9 +111,27 @@ int load_settings(GameSettings* settings) {
             sscanf(line, "current_skin = %d", (int*)&settings->current_skin);
         } else if (strncmp(line, "difficulty", 10) == 0) {
             sscanf(line, "difficulty = %d", (int*)&settings->difficulty);
+        } else if (strncmp(line, "mode", 4) == 0) {
+            sscanf(line, "mode = %d", (int*)&settings->mode);
         }
     }
     fclose(file);
+
+    if (settings->current_skin < 0 || settings->current_skin >= SKIN_COUNT) {
+        settings->current_skin = SKIN_DEFAULT;
+    }
+    if (settings->difficulty < 0 || settings->difficulty >= DIFFICULTY_COUNT) {
+        settings->difficulty = DIFFICULTY_NORMAL;
+    }
+    if (settings->mode < 0 || settings->mode >= MODE_COUNT) {
+        settings->mode = MODE_CLASSIC;
+    }
+    if (settings->volume < 0.0) {
+        settings->volume = 0.0;
+    } else if (settings->volume > 1.0) {
+        settings->volume = 1.0;
+    }
+
     return 1;
 }
 
@@ -127,6 +146,7 @@ void save_settings(GameSettings* settings) {
     fprintf(file, "volume = %.1f\n", settings->volume);
     fprintf(file, "current_skin = %d\n", settings->current_skin);
     fprintf(file, "difficulty = %d\n", settings->difficulty);
+    fprintf(file, "mode = %d\n", settings->mode);
     
     fclose(file);
 }

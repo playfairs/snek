@@ -50,6 +50,7 @@ typedef struct {
     double volume;
     SnakeSkin current_skin;
     Difficulty difficulty;
+    GameMode mode;
 } GameSettings;
 
 typedef struct {

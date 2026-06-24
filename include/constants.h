@@ -14,6 +14,7 @@
 #define POWERUP_ITEM_LIFETIME 10
 #define POWERUP_INITIAL_SPAWN_DELAY 10
 #define POWERUP_SPAWN_DELAY_VARIANCE 10
+#define TIME_ATTACK_DURATION 60
 
 #define WHITE_R 240
 #define WHITE_G 240
@@ -81,6 +82,13 @@ typedef enum {
 } PowerupType;
 
 typedef enum {
+    MODE_CLASSIC,
+    MODE_CHALLENGE,
+    MODE_TIME_ATTACK,
+    MODE_COUNT
+} GameMode;
+
+typedef enum {
     SKIN_DEFAULT,
     SKIN_BLUE,
     SKIN_RED,
@@ -88,13 +96,15 @@ typedef enum {
     SKIN_PURPLE,
     SKIN_GOLD,
     SKIN_CYAN,
-    SKIN_NEON
+    SKIN_NEON,
+    SKIN_COUNT
 } SnakeSkin;
 
 typedef enum {
     DIFFICULTY_EASY,
     DIFFICULTY_NORMAL,
-    DIFFICULTY_HARD
+    DIFFICULTY_HARD,
+    DIFFICULTY_COUNT
 } Difficulty;
 
 #endif
