@@ -1,0 +1,208 @@
+name: Build Packages
+
+on:
+  release:
+    types:
+      - published
+
+permissions:
+  contents: write
+
+jobs:
+  build-pkg:
+    name: Build macOS PKG
+    runs-on: macos-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: brew install sdl2 sdl2_ttf sdl2_mixer pkg-config
+
+      - name: Read version
+        id: version
+        run: |
+          APP_VERSION="$(tr -d '[:space:]' < VERSION)"
+          test -n "$APP_VERSION"
+          echo "app_version=$APP_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Build app
+        run: make clean all
+
+      - name: Create app bundle
+        run: |
+          APP_VERSION="${{ steps.version.outputs.app_version }}"
+          APP_ROOT="package/Snek.app"
+          mkdir -p "$APP_ROOT/Contents/MacOS" "$APP_ROOT/Contents/Resources"
+          cp build/snek "$APP_ROOT/Contents/Resources/snek-bin"
+          cp -R assets "$APP_ROOT/Contents/Resources/assets"
+
+          cat > "$APP_ROOT/Contents/Info.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleExecutable</key>
+            <string>Snek</string>
+            <key>CFBundleIdentifier</key>
+            <string>dev.snek.game</string>
+            <key>CFBundleName</key>
+            <string>Snek</string>
+            <key>CFBundlePackageType</key>
+            <string>APPL</string>
+            <key>CFBundleShortVersionString</key>
+            <string>$APP_VERSION</string>
+            <key>CFBundleVersion</key>
+            <string>$APP_VERSION</string>
+            <key>LSMinimumSystemVersion</key>
+            <string>12.0</string>
+          </dict>
+          </plist>
+          PLIST
+
+          cat > "$APP_ROOT/Contents/MacOS/Snek" <<'SH'
+          #!/bin/sh
+          cd "$(dirname "$0")/../Resources" || exit 1
+          exec ./snek-bin
+          SH
+
+          chmod +x "$APP_ROOT/Contents/MacOS/Snek" "$APP_ROOT/Contents/Resources/snek-bin"
+
+      - name: Build PKG
+        run: |
+          mkdir -p dist
+          pkgbuild \
+            --component package/Snek.app \
+            --install-location /Applications \
+            --identifier dev.snek.game \
+            --version "${{ steps.version.outputs.app_version }}" \
+            dist/Snek.pkg
+
+      - name: Upload PKG
+        uses: actions/upload-artifact@v4
+        with:
+          name: Snek-macOS-pkg
+          path: dist/Snek.pkg
+          if-no-files-found: error
+
+  build-dmg:
+    name: Build macOS DMG
+    runs-on: macos-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: brew install sdl2 sdl2_ttf sdl2_mixer pkg-config
+
+      - name: Read version
+        id: version
+        run: |
+          APP_VERSION="$(tr -d '[:space:]' < VERSION)"
+          test -n "$APP_VERSION"
+          echo "app_version=$APP_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Build app
+        run: make clean all
+
+      - name: Create app bundle
+        run: |
+          APP_VERSION="${{ steps.version.outputs.app_version }}"
+          APP_ROOT="package/Snek.app"
+          mkdir -p "$APP_ROOT/Contents/MacOS" "$APP_ROOT/Contents/Resources"
+          cp build/snek "$APP_ROOT/Contents/Resources/snek-bin"
+          cp -R assets "$APP_ROOT/Contents/Resources/assets"
+
+          cat > "$APP_ROOT/Contents/Info.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleExecutable</key>
+            <string>Snek</string>
+            <key>CFBundleIdentifier</key>
+            <string>dev.snek.game</string>
+            <key>CFBundleName</key>
+            <string>Snek</string>
+            <key>CFBundlePackageType</key>
+            <string>APPL</string>
+            <key>CFBundleShortVersionString</key>
+            <string>$APP_VERSION</string>
+            <key>CFBundleVersion</key>
+            <string>$APP_VERSION</string>
+            <key>LSMinimumSystemVersion</key>
+            <string>12.0</string>
+          </dict>
+          </plist>
+          PLIST
+
+          cat > "$APP_ROOT/Contents/MacOS/Snek" <<'SH'
+          #!/bin/sh
+          cd "$(dirname "$0")/../Resources" || exit 1
+          exec ./snek-bin
+          SH
+
+          chmod +x "$APP_ROOT/Contents/MacOS/Snek" "$APP_ROOT/Contents/Resources/snek-bin"
+
+      - name: Build DMG
+        run: |
+          mkdir -p dist dmg-root
+          cp -R package/Snek.app dmg-root/
+          ln -s /Applications dmg-root/Applications
+          hdiutil create \
+            -volname Snek \
+            -srcfolder dmg-root \
+            -ov \
+            -format UDZO \
+            dist/Snek.dmg
+
+      - name: Upload DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: Snek-macOS-dmg
+          path: dist/Snek.dmg
+          if-no-files-found: error
+
+  build-exe:
+    name: Build Windows EXE
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            make
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-pkg-config
+            mingw-w64-x86_64-SDL2
+            mingw-w64-x86_64-SDL2_ttf
+            mingw-w64-x86_64-SDL2_mixer
+
+      - name: Build executable
+        run: make clean all TARGET=build/Snek.exe
+
+      - name: Collect Windows package
+        run: |
+          mkdir -p package/windows
+          cp build/Snek.exe package/windows/Snek.exe
+          cp -R assets package/windows/assets
+          ldd build/Snek.exe | awk '{ for (i = 1; i <= NF; i++) if ($i ~ /^\/mingw64\/bin\/.*\.dll$/) print $i }' | xargs -r -I{} cp "{}" package/windows/
+
+      - name: Upload EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: Snek-windows-exe
+          path: package/windows/**
+          if-no-files-found: error
