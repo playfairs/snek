@@ -19,6 +19,7 @@ typedef struct {
 typedef struct {
     Snake snake;
     Food food;
+    Food secondary_food;
     Powerup powerup;
     ActivePowerup active_powerups[MAX_POWERUPS];
     int powerup_count;

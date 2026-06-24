@@ -28,6 +28,8 @@ typedef struct {
     Position pos;
     ItemType type;
     int active;
+    double spawn_time;
+    double lifetime;
 } Food;
 
 typedef struct {

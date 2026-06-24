@@ -24,12 +24,27 @@ void pathfind_apply(GameContext* game) {
     (void)game;
 }
 
+static Food* get_pathfind_target(GameContext* game) {
+    if (game->food.active && game->food.type != ITEM_BOMB) {
+        return &game->food;
+    }
+    if (game->secondary_food.active) {
+        return &game->secondary_food;
+    }
+    return NULL;
+}
+
 void pathfind_update(GameContext* game) {
+    Food* target = get_pathfind_target(game);
+    if (!target) {
+        return;
+    }
+
     Position head = game->snake.segments[game->snake.length - 1];
     
     int best_dx = game->snake.dx;
     int best_dy = game->snake.dy;
-    int best_dist = distance_to_food(head, game->food.pos);
+    int best_dist = distance_to_food(head, target->pos);
     
     int directions[4][2] = {{0, -SNAKE_BLOCK}, {0, SNAKE_BLOCK}, {-SNAKE_BLOCK, 0}, {SNAKE_BLOCK, 0}};
     

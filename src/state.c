@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <limits.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include "../include/state.h"
@@ -55,7 +59,18 @@ void cleanup_state(GameState* state) {
 }
 
 int load_stats(GameStats* stats) {
-    FILE* file = fopen("data/stats.toml", "r");
+    char path[PATH_MAX];
+    char* home = getenv("HOME");
+    if (home) {
+        int n = snprintf(path, sizeof(path), "%s/.config/snek/stats.toml", home);
+        if (n < 0 || (size_t)n >= sizeof(path)) {
+            strncpy(path, "data/stats.toml", sizeof(path));
+            path[sizeof(path)-1] = '\0';
+        }
+    } else {
+        snprintf(path, sizeof(path), "data/stats.toml");
+    }
+    FILE* file = fopen(path, "r");
     if (!file) {
         return 0;
     }
@@ -79,7 +94,28 @@ int load_stats(GameStats* stats) {
 }
 
 void save_stats(GameStats* stats) {
-    FILE* file = fopen("data/stats.toml", "w");
+    char dir[PATH_MAX];
+    char path[PATH_MAX];
+    char* home = getenv("HOME");
+    if (home) {
+        int nd = snprintf(dir, sizeof(dir), "%s/.config/snek", home);
+        if (nd < 0 || (size_t)nd >= sizeof(dir)) {
+            strncpy(dir, "data", sizeof(dir));
+            dir[sizeof(dir)-1] = '\0';
+        }
+        struct stat st = {0};
+        if (stat(dir, &st) == -1) {
+            mkdir(dir, 0700);
+        }
+        int n = snprintf(path, sizeof(path), "%s/stats.toml", dir);
+        if (n < 0 || (size_t)n >= sizeof(path)) {
+            strncpy(path, "data/stats.toml", sizeof(path));
+            path[sizeof(path)-1] = '\0';
+        }
+    } else {
+        snprintf(path, sizeof(path), "data/stats.toml");
+    }
+    FILE* file = fopen(path, "w");
     if (!file) {
         return;
     }
@@ -94,7 +130,18 @@ void save_stats(GameStats* stats) {
 }
 
 int load_settings(GameSettings* settings) {
-    FILE* file = fopen("data/settings.toml", "r");
+    char path[PATH_MAX];
+    char* home = getenv("HOME");
+    if (home) {
+        int n = snprintf(path, sizeof(path), "%s/.config/snek/settings.toml", home);
+        if (n < 0 || (size_t)n >= sizeof(path)) {
+            strncpy(path, "data/settings.toml", sizeof(path));
+            path[sizeof(path)-1] = '\0';
+        }
+    } else {
+        snprintf(path, sizeof(path), "data/settings.toml");
+    }
+    FILE* file = fopen(path, "r");
     if (!file) {
         return 0;
     }
@@ -136,7 +183,28 @@ int load_settings(GameSettings* settings) {
 }
 
 void save_settings(GameSettings* settings) {
-    FILE* file = fopen("data/settings.toml", "w");
+    char dir[PATH_MAX];
+    char path[PATH_MAX];
+    char* home = getenv("HOME");
+    if (home) {
+        int nd = snprintf(dir, sizeof(dir), "%s/.config/snek", home);
+        if (nd < 0 || (size_t)nd >= sizeof(dir)) {
+            strncpy(dir, "data", sizeof(dir));
+            dir[sizeof(dir)-1] = '\0';
+        }
+        struct stat st = {0};
+        if (stat(dir, &st) == -1) {
+            mkdir(dir, 0700);
+        }
+        int n = snprintf(path, sizeof(path), "%s/settings.toml", dir);
+        if (n < 0 || (size_t)n >= sizeof(path)) {
+            strncpy(path, "data/settings.toml", sizeof(path));
+            path[sizeof(path)-1] = '\0';
+        }
+    } else {
+        snprintf(path, sizeof(path), "data/settings.toml");
+    }
+    FILE* file = fopen(path, "w");
     if (!file) {
         return;
     }
