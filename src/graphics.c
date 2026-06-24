@@ -6,6 +6,7 @@
 #include "../include/graphics.h"
 #include "../include/state.h"
 #include "../include/constants.h"
+#include "../include/items.h"
 
 static Color get_skin_color(SnakeSkin skin, int is_head) {
     switch (skin) {
@@ -101,8 +102,8 @@ static void draw_panel(SDL_Renderer* renderer, SDL_Rect rect, Color fill, Color 
     stroke_rect(renderer, rect, border);
 }
 
-static Color apply_powerup_glow(Color base, PowerupType active_powerup) {
-    if (active_powerup != POWERUP_INVINCIBLE && active_powerup != POWERUP_PATHFIND) {
+static Color apply_powerup_glow(Color base, int glow_active) {
+    if (!glow_active) {
         return base;
     }
 
@@ -187,7 +188,7 @@ void draw_grid(SDL_Renderer* renderer) {
     SDL_RenderDrawLine(renderer, 0, GAME_AREA_BOTTOM - 1, DIS_WIDTH - 1, GAME_AREA_BOTTOM - 1);
 }
 
-void draw_snake(SDL_Renderer* renderer, Snake* snake, PowerupType active_powerup) {
+void draw_snake(SDL_Renderer* renderer, Snake* snake, int glow_active) {
     for (int i = 0; i < snake->length - 1; i++) {
         Color base_color = get_skin_color(snake->skin, 0);
 
@@ -223,7 +224,7 @@ void draw_snake(SDL_Renderer* renderer, Snake* snake, PowerupType active_powerup
             };
         }
 
-        Color color = apply_powerup_glow(base_color, active_powerup);
+        Color color = apply_powerup_glow(base_color, glow_active);
         draw_cube(renderer, snake->segments[i].x, snake->segments[i].y, SNAKE_BLOCK, color, 0);
     }
 
@@ -263,7 +264,7 @@ void draw_snake(SDL_Renderer* renderer, Snake* snake, PowerupType active_powerup
             };
         }
 
-        Color color = apply_powerup_glow(base_color, active_powerup);
+        Color color = apply_powerup_glow(base_color, glow_active);
         draw_cube(renderer, head.x, head.y, SNAKE_BLOCK, color, 1);
 
         SDL_SetRenderDrawColor(renderer, 230, 250, 245, 255);
@@ -275,24 +276,20 @@ void draw_snake(SDL_Renderer* renderer, Snake* snake, PowerupType active_powerup
 void draw_food(SDL_Renderer* renderer, Food* food) {
     if (!food->active) return;
 
-    double pulse = (SDL_GetTicks() % 1000) / 1000.0;
-    int pulse_size = (int)(2 * (0.5 + 0.5 * sin(pulse * 2 * M_PI)));
-
-    SDL_Rect food_rect = {food->pos.x, food->pos.y, SNAKE_BLOCK, SNAKE_BLOCK};
-    SDL_SetRenderDrawColor(renderer, RED_R, RED_G, RED_B, 255);
-    SDL_RenderFillRect(renderer, &food_rect);
-
-    Color highlight = {
-        RED_R + 50 > 255 ? 255 : RED_R + 50,
-        RED_G - 50 < 0 ? 0 : RED_G - 50,
-        RED_B - 50 < 0 ? 0 : RED_B - 50
-    };
-
-    int inner_size = SNAKE_BLOCK - 4 - pulse_size;
-    int inner_offset = (SNAKE_BLOCK - inner_size) / 2;
-    SDL_Rect inner_rect = {food->pos.x + inner_offset, food->pos.y + inner_offset, inner_size, inner_size};
-    SDL_SetRenderDrawColor(renderer, highlight.r, highlight.g, highlight.b, 255);
-    SDL_RenderFillRect(renderer, &inner_rect);
+    switch (food->type) {
+        case ITEM_APPLE:
+            draw_apple(renderer, food);
+            break;
+        case ITEM_BANANA:
+            draw_banana(renderer, food);
+            break;
+        case ITEM_BOMB:
+            draw_bomb(renderer, food);
+            break;
+        default:
+            draw_apple(renderer, food);
+            break;
+    }
 }
 
 void draw_powerup(SDL_Renderer* renderer, Powerup* powerup) {
@@ -326,7 +323,7 @@ void draw_powerup(SDL_Renderer* renderer, Powerup* powerup) {
 
 void draw_hud(SDL_Renderer* renderer, TTF_Font* score_font, TTF_Font* button_font,
               int score, int high_score, int snake_length, int apples_collected,
-              int current_speed, PowerupType active_powerup, double powerup_end_time,
+              int current_speed, const ActivePowerup active_powerups[], int active_powerup_count,
               GameMode mode, double time_left) {
     SDL_Rect header_rect = {0, 0, DIS_WIDTH, HEADER_HEIGHT};
     SDL_SetRenderDrawColor(renderer, 12, 18, 28, 255);
@@ -470,24 +467,31 @@ void draw_hud(SDL_Renderer* renderer, TTF_Font* score_font, TTF_Font* button_fon
         SDL_DestroyTexture(timer_tex);
     }
 
-    if (active_powerup != POWERUP_NONE) {
+    if (active_powerup_count > 0) {
         const char* powerup_names[] = {"SPEED BOOST", "SLOW MOTION", "2X POINTS", "INVINCIBLE", "PATHFIND", "FRENZY"};
-        const char* name = powerup_names[active_powerup];
-        double powerup_time_left = powerup_end_time - SDL_GetTicks() / 1000.0;
-        if (powerup_time_left < 0.0) powerup_time_left = 0.0;
-        char power_text[64];
-        snprintf(power_text, sizeof(power_text), "%s %.1fs", name, powerup_time_left);
-        SDL_Rect power_chip = {DIS_WIDTH - 268, GAME_AREA_TOP + 12, 240, 28};
-        SDL_SetRenderDrawColor(renderer, 24, 34, 48, 255);
-        SDL_RenderFillRect(renderer, &power_chip);
-        SDL_SetRenderDrawColor(renderer, 80, 150, 220, 255);
-        SDL_RenderDrawRect(renderer, &power_chip);
-        SDL_Surface* power_surf = TTF_RenderText_Blended(button_font, power_text, accent);
-        SDL_Texture* power_tex = SDL_CreateTextureFromSurface(renderer, power_surf);
-        SDL_Rect power_rect = {power_chip.x + 12, power_chip.y + 4, power_surf->w, power_surf->h};
-        SDL_RenderCopy(renderer, power_tex, NULL, &power_rect);
-        SDL_FreeSurface(power_surf);
-        SDL_DestroyTexture(power_tex);
+        int timer_x = DIS_WIDTH - 268;
+        int timer_y = GAME_AREA_TOP + 12;
+
+        for (int i = 0; i < active_powerup_count; i++) {
+            PowerupType type = active_powerups[i].type;
+            const char* name = powerup_names[type];
+            double powerup_time_left = active_powerups[i].end_time - SDL_GetTicks() / 1000.0;
+            if (powerup_time_left < 0.0) powerup_time_left = 0.0;
+            char power_text[64];
+            snprintf(power_text, sizeof(power_text), "%s %.1fs", name, powerup_time_left);
+            SDL_Rect power_chip = {timer_x, timer_y, 240, 28};
+            SDL_SetRenderDrawColor(renderer, 24, 34, 48, 255);
+            SDL_RenderFillRect(renderer, &power_chip);
+            SDL_SetRenderDrawColor(renderer, 80, 150, 220, 255);
+            SDL_RenderDrawRect(renderer, &power_chip);
+            SDL_Surface* power_surf = TTF_RenderText_Blended(button_font, power_text, accent);
+            SDL_Texture* power_tex = SDL_CreateTextureFromSurface(renderer, power_surf);
+            SDL_Rect power_rect = {power_chip.x + 12, power_chip.y + 4, power_surf->w, power_surf->h};
+            SDL_RenderCopy(renderer, power_tex, NULL, &power_rect);
+            SDL_FreeSurface(power_surf);
+            SDL_DestroyTexture(power_tex);
+            timer_y += 34;
+        }
     }
 }
 

@@ -82,6 +82,13 @@ typedef enum {
 } PowerupType;
 
 typedef enum {
+    ITEM_APPLE,
+    ITEM_BANANA,
+    ITEM_BOMB,
+    ITEM_NONE
+} ItemType;
+
+typedef enum {
     MODE_CLASSIC,
     MODE_CHALLENGE,
     MODE_TIME_ATTACK,
