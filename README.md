@@ -1,4 +1,4 @@
-# Snek
+# Snek ![](https://rv.playfairs.cc/playfairs/snek)
 
 A Snake game with powerups, statistics tracking, and multiple snake skins.
 
