@@ -12,8 +12,8 @@
 #include "../include/audio.h"
 
 static void spawn_food(Food* food) {
-    int max_x = (DIS_WIDTH - SNAKE_BLOCK) / SNAKE_BLOCK;
-    int max_y = (DIS_HEIGHT - GAME_AREA_TOP - SNAKE_BLOCK) / SNAKE_BLOCK;
+    int max_x = DIS_WIDTH / SNAKE_BLOCK;
+    int max_y = GAME_AREA_HEIGHT / SNAKE_BLOCK;
     
     food->pos.x = (rand() % max_x) * SNAKE_BLOCK;
     food->pos.y = GAME_AREA_TOP + (rand() % max_y) * SNAKE_BLOCK;
@@ -48,10 +48,10 @@ static void update_snake_position(Snake* snake, PowerupType active_powerup) {
     new_head.x += snake->dx;
     new_head.y += snake->dy;
     
-    if (active_powerup != POWERUP_INVINCIBLE) {
+    if (active_powerup != POWERUP_INVINCIBLE && active_powerup != POWERUP_PATHFIND) {
         if (new_head.y < GAME_AREA_TOP) {
-            new_head.y = DIS_HEIGHT - SNAKE_BLOCK;
-        } else if (new_head.y >= DIS_HEIGHT) {
+            new_head.y = GAME_AREA_BOTTOM - SNAKE_BLOCK;
+        } else if (new_head.y >= GAME_AREA_BOTTOM) {
             new_head.y = GAME_AREA_TOP;
         }
         if (new_head.x < 0) {
@@ -65,10 +65,10 @@ static void update_snake_position(Snake* snake, PowerupType active_powerup) {
         } else if (new_head.x < 0) {
             new_head.x = DIS_WIDTH - SNAKE_BLOCK;
         }
-        if (new_head.y >= DIS_HEIGHT) {
-            new_head.y = 0;
-        } else if (new_head.y < 0) {
+        if (new_head.y >= GAME_AREA_BOTTOM) {
             new_head.y = GAME_AREA_TOP;
+        } else if (new_head.y < GAME_AREA_TOP) {
+            new_head.y = GAME_AREA_BOTTOM - SNAKE_BLOCK;
         }
     }
     
@@ -109,7 +109,7 @@ void init_game(GameContext* game, GameState* state) {
     game->score = 0;
     game->apples_eaten = 0;
     game->start_time = SDL_GetTicks() / 1000.0;
-    game->powerup_spawn_time = game->start_time + 10 + rand() % 10;
+    game->powerup_spawn_time = game->start_time + POWERUP_INITIAL_SPAWN_DELAY + rand() % POWERUP_SPAWN_DELAY_VARIANCE;
     game->base_speed = get_base_speed(state->settings.difficulty);
     game->current_speed = game->base_speed;
     game->status = GAME_RUNNING;
@@ -127,15 +127,14 @@ GameStatus game_loop(GameContext* game, GameState* state, AudioState* audio) {
         
         if (!game->powerup.active && current_time > game->powerup_spawn_time) {
             spawn_powerup(&game->powerup);
-            game->powerup_spawn_time = current_time + 15 + rand() % 15;
+            game->powerup_spawn_time = current_time + POWERUP_INITIAL_SPAWN_DELAY + rand() % POWERUP_SPAWN_DELAY_VARIANCE;
         }
-        
         if (game->active_powerup != POWERUP_NONE && current_time > game->powerup_end_time) {
             remove_powerup_effect(game, game->active_powerup);
             game->active_powerup = POWERUP_NONE;
         }
         
-        if (game->powerup.active && current_time - game->powerup.spawn_time > 10) {
+        if (game->powerup.active && current_time - game->powerup.spawn_time > POWERUP_ITEM_LIFETIME) {
             game->powerup.active = 0;
         }
         
@@ -168,7 +167,7 @@ GameStatus game_loop(GameContext* game, GameState* state, AudioState* audio) {
         
         update_snake_position(&game->snake, game->active_powerup);
         
-        if (game->active_powerup != POWERUP_INVINCIBLE && check_self_collision(&game->snake)) {
+        if (game->active_powerup != POWERUP_INVINCIBLE && game->active_powerup != POWERUP_PATHFIND && check_self_collision(&game->snake)) {
             game->status = GAME_OVER;
         }
         

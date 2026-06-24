@@ -7,8 +7,8 @@
 #include "game.h"
 
 void spawn_powerup(Powerup* powerup) {
-    int max_x = (DIS_WIDTH - SNAKE_BLOCK) / SNAKE_BLOCK;
-    int max_y = (DIS_HEIGHT - GAME_AREA_TOP - SNAKE_BLOCK) / SNAKE_BLOCK;
+    int max_x = DIS_WIDTH / SNAKE_BLOCK;
+    int max_y = GAME_AREA_HEIGHT / SNAKE_BLOCK;
     
     powerup->pos.x = (rand() % max_x) * SNAKE_BLOCK;
     powerup->pos.y = GAME_AREA_TOP + (rand() % max_y) * SNAKE_BLOCK;
@@ -18,8 +18,8 @@ void spawn_powerup(Powerup* powerup) {
 }
 
 void update_powerup(Powerup* powerup, double current_time) {
-    if (powerup->active && current_time - powerup->spawn_time > 10) {
-        powerup->active = 1;
+    if (powerup->active && current_time - powerup->spawn_time > POWERUP_ITEM_LIFETIME) {
+        powerup->active = 0;
     }
 }
 

@@ -41,7 +41,7 @@ static Color get_powerup_color(PowerupType type) {
 }
 
 static Color apply_powerup_glow(Color base, PowerupType active_powerup) {
-    if (active_powerup != POWERUP_INVINCIBLE) {
+    if (active_powerup != POWERUP_INVINCIBLE && active_powerup != POWERUP_PATHFIND) {
         return base;
     }
     
@@ -99,10 +99,10 @@ void draw_grid(SDL_Renderer* renderer) {
     SDL_SetRenderDrawColor(renderer, 35, 35, 45, 255);
     
     for (int x = 0; x < DIS_WIDTH; x += SNAKE_BLOCK) {
-        SDL_RenderDrawLine(renderer, x, GAME_AREA_TOP, x, DIS_HEIGHT);
+        SDL_RenderDrawLine(renderer, x, GAME_AREA_TOP, x, GAME_AREA_BOTTOM);
     }
     
-    for (int y = GAME_AREA_TOP; y < DIS_HEIGHT; y += SNAKE_BLOCK) {
+    for (int y = GAME_AREA_TOP; y <= GAME_AREA_BOTTOM; y += SNAKE_BLOCK) {
         SDL_RenderDrawLine(renderer, 0, y, DIS_WIDTH, y);
     }
 }
