@@ -477,7 +477,7 @@ void draw_hud(SDL_Renderer* renderer, TTF_Font* score_font, TTF_Font* button_fon
         if (powerup_time_left < 0.0) powerup_time_left = 0.0;
         char power_text[64];
         snprintf(power_text, sizeof(power_text), "%s %.1fs", name, powerup_time_left);
-        SDL_Rect power_chip = {DIS_WIDTH - 260, 22, 240, 28};
+        SDL_Rect power_chip = {DIS_WIDTH - 268, GAME_AREA_TOP + 12, 240, 28};
         SDL_SetRenderDrawColor(renderer, 24, 34, 48, 255);
         SDL_RenderFillRect(renderer, &power_chip);
         SDL_SetRenderDrawColor(renderer, 80, 150, 220, 255);
