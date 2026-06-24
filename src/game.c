@@ -211,13 +211,12 @@ GameStatus game_loop(GameContext* game, GameState* state, AudioState* audio) {
                 ItemType item_type = game->food.type;
                 if (item_type == ITEM_BOMB) {
                     game->status = GAME_OVER;
-                } else {
-                    spawn_food(&game->food);
-
-                    if (game->snake.length < MAX_SNAKE_LENGTH) {
-                        game->snake.length++;
-                        game->snake.segments[game->snake.length - 1] = game->snake.segments[game->snake.length - 2];
+                    if (state->settings.sound_enabled && audio) {
+                        play_explosion_sound(audio, state->settings.volume);
                     }
+                } else {
+                    game->snake.length++;
+                    game->snake.segments[game->snake.length - 1] = game->snake.segments[game->snake.length - 2];
 
                     game->apples_eaten++;
                     state->stats.total_apples++;
@@ -236,6 +235,7 @@ GameStatus game_loop(GameContext* game, GameState* state, AudioState* audio) {
                     }
 
                     save_stats(&state->stats);
+                    spawn_food(&game->food);
                 }
             }
 
