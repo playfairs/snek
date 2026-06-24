@@ -11,8 +11,12 @@
 typedef enum {
     MENU_MAIN,
     MENU_SETTINGS,
+    MENU_STATS,
     MENU_GAME_OVER
 } MenuState;
+
+static void draw_stats_menu_local(SDL_Renderer* renderer, TTF_Font* large_font, TTF_Font* score_font,
+                                  TTF_Font* button_font, GameState* state);
 
 static int draw_button(SDL_Renderer* renderer, TTF_Font* font, const char* text, int x, int y, int w, int h, int mouse_x, int mouse_y, int* clicked) {
     SDL_Rect rect = {x, y, w, h};
@@ -108,9 +112,12 @@ static MenuState main_menu_loop(GameState* state, AudioState* audio) {
         int settings_clicked = draw_button(state->renderer, state->button_font, "SETTINGS",
                                            start_x, button_y + button_height + button_spacing,
                                            button_width, button_height, mouse_x, mouse_y, &mouse_clicked);
+        int stats_clicked = draw_button(state->renderer, state->button_font, "STATS",
+                        start_x, button_y + (button_height + button_spacing) * 2,
+                        button_width, button_height, mouse_x, mouse_y, &mouse_clicked);
         int quit_clicked = draw_button(state->renderer, state->button_font, "EXIT",
-                                       start_x, button_y + (button_height + button_spacing) * 2,
-                                       button_width, button_height, mouse_x, mouse_y, &mouse_clicked);
+                           start_x, button_y + (button_height + button_spacing) * 3,
+                           button_width, button_height, mouse_x, mouse_y, &mouse_clicked);
 
         SDL_RenderPresent(state->renderer);
         SDL_Delay(1000 / 60);
@@ -120,6 +127,9 @@ static MenuState main_menu_loop(GameState* state, AudioState* audio) {
         }
         if (settings_clicked) {
             return MENU_SETTINGS;
+        }
+        if (stats_clicked) {
+            return MENU_STATS;
         }
         if (quit_clicked) {
             running = 0;
@@ -186,7 +196,7 @@ static MenuState settings_menu_loop(GameState* state) {
         SDL_GetMouseState(&mouse_x, &mouse_y);
 
         draw_settings_menu(state->renderer, state->large_font, state->score_font,
-                          state->button_font, state, 0);
+                  state->button_font, state, 0);
 
         char skin_text[64];
         snprintf(skin_text, sizeof(skin_text), "Skin: %s", skin_names[skin_index]);
@@ -266,6 +276,121 @@ static MenuState settings_menu_loop(GameState* state) {
     }
 
     return MENU_MAIN;
+}
+
+static MenuState stats_menu_loop(GameState* state) {
+    int running = 1;
+    int button_width = 220;
+    int button_height = 55;
+    int start_x = (DIS_WIDTH - button_width) / 2;
+    int start_y = DIS_HEIGHT - 140;
+
+    while (running) {
+        SDL_Event event;
+        int mouse_clicked = 0;
+        int mouse_x = 0, mouse_y = 0;
+
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                return MENU_MAIN;
+            }
+            if (event.type == SDL_MOUSEBUTTONDOWN) {
+                if (event.button.button == SDL_BUTTON_LEFT) {
+                    mouse_clicked = 1;
+                    mouse_x = event.button.x;
+                    mouse_y = event.button.y;
+                }
+            }
+            if (event.type == SDL_KEYDOWN) {
+                if (event.key.keysym.sym == SDLK_ESCAPE) {
+                    return MENU_MAIN;
+                }
+            }
+        }
+
+        SDL_GetMouseState(&mouse_x, &mouse_y);
+
+        draw_stats_menu_local(state->renderer, state->large_font, state->score_font, state->button_font, state);
+
+        int back_clicked = draw_button(state->renderer, state->button_font, "BACK",
+                                       start_x, start_y, button_width, button_height,
+                                       mouse_x, mouse_y, &mouse_clicked);
+
+        SDL_RenderPresent(state->renderer);
+        SDL_Delay(1000 / 60);
+
+        if (back_clicked) {
+            return MENU_MAIN;
+        }
+    }
+
+    return MENU_MAIN;
+}
+
+static void draw_stats_menu_local(SDL_Renderer* renderer, TTF_Font* large_font, TTF_Font* score_font,
+                                  TTF_Font* button_font, GameState* state) {
+    SDL_SetRenderDrawColor(renderer, 10, 14, 22, 255);
+    SDL_RenderClear(renderer);
+
+    SDL_Rect panel = {80, 90, DIS_WIDTH - 160, DIS_HEIGHT - 180};
+    SDL_SetRenderDrawColor(renderer, 22, 28, 40, 255);
+    SDL_RenderFillRect(renderer, &panel);
+    SDL_SetRenderDrawColor(renderer, 80, 120, 170, 255);
+    SDL_RenderDrawRect(renderer, &panel);
+
+    SDL_Color accent = {150, 220, 255, 255};
+    SDL_Color gray = {170, 180, 190, 255};
+    SDL_Color white = {WHITE_R, WHITE_G, WHITE_B, 255};
+
+    SDL_Surface* title_surf = TTF_RenderText_Blended(large_font, "STATISTICS", accent);
+    SDL_Texture* title_tex = SDL_CreateTextureFromSurface(renderer, title_surf);
+    SDL_Rect title_rect = {(DIS_WIDTH - title_surf->w) / 2, 120, title_surf->w, title_surf->h};
+    SDL_RenderCopy(renderer, title_tex, NULL, &title_rect);
+    SDL_FreeSurface(title_surf);
+    SDL_DestroyTexture(title_tex);
+
+    char buf[64];
+    int y = 180;
+    int spacing = 36;
+
+    snprintf(buf, sizeof(buf), "High Score: %d", state->stats.high_score);
+    SDL_Surface* s1 = TTF_RenderText_Blended(score_font, buf, white);
+    SDL_Texture* t1 = SDL_CreateTextureFromSurface(renderer, s1);
+    SDL_Rect r1 = {120, y, s1->w, s1->h};
+    SDL_RenderCopy(renderer, t1, NULL, &r1);
+    SDL_FreeSurface(s1); SDL_DestroyTexture(t1);
+    y += spacing;
+
+    snprintf(buf, sizeof(buf), "Total Apples: %d", state->stats.total_apples);
+    SDL_Surface* s2 = TTF_RenderText_Blended(score_font, buf, white);
+    SDL_Texture* t2 = SDL_CreateTextureFromSurface(renderer, s2);
+    SDL_Rect r2 = {120, y, s2->w, s2->h};
+    SDL_RenderCopy(renderer, t2, NULL, &r2);
+    SDL_FreeSurface(s2); SDL_DestroyTexture(t2);
+    y += spacing;
+
+    snprintf(buf, sizeof(buf), "Games Played: %d", state->stats.games_played);
+    SDL_Surface* s3 = TTF_RenderText_Blended(score_font, buf, white);
+    SDL_Texture* t3 = SDL_CreateTextureFromSurface(renderer, s3);
+    SDL_Rect r3 = {120, y, s3->w, s3->h};
+    SDL_RenderCopy(renderer, t3, NULL, &r3);
+    SDL_FreeSurface(s3); SDL_DestroyTexture(t3);
+    y += spacing;
+
+    snprintf(buf, sizeof(buf), "Powerups Collected: %d", state->stats.powerups_collected);
+    SDL_Surface* s4 = TTF_RenderText_Blended(score_font, buf, white);
+    SDL_Texture* t4 = SDL_CreateTextureFromSurface(renderer, s4);
+    SDL_Rect r4 = {120, y, s4->w, s4->h};
+    SDL_RenderCopy(renderer, t4, NULL, &r4);
+    SDL_FreeSurface(s4); SDL_DestroyTexture(t4);
+    y += spacing;
+
+    snprintf(buf, sizeof(buf), "Best Time: %.1fs", state->stats.best_time);
+    SDL_Surface* s5 = TTF_RenderText_Blended(score_font, buf, gray);
+    SDL_Texture* t5 = SDL_CreateTextureFromSurface(renderer, s5);
+    SDL_Rect r5 = {120, y, s5->w, s5->h};
+    SDL_RenderCopy(renderer, t5, NULL, &r5);
+    SDL_FreeSurface(s5); SDL_DestroyTexture(t5);
 }
 
 static MenuState game_over_loop(GameState* state, int score) {
@@ -402,6 +527,9 @@ int main(int argc, char* argv[]) {
                 break;
             case MENU_SETTINGS:
                 current_menu = settings_menu_loop(&state);
+                break;
+            case MENU_STATS:
+                current_menu = stats_menu_loop(&state);
                 break;
             case MENU_GAME_OVER: {
                 GameContext game;

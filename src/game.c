@@ -302,6 +302,7 @@ GameStatus game_loop(GameContext* game, GameState* state, AudioState* audio) {
         }
 
         if (game->powerup.active) {
+            draw_powerup(state->renderer, &game->powerup);
         }
 
         int glow_active = has_active_powerup(game, POWERUP_INVINCIBLE) || has_active_powerup(game, POWERUP_PATHFIND);
@@ -316,9 +317,9 @@ GameStatus game_loop(GameContext* game, GameState* state, AudioState* audio) {
         }
 
         draw_hud(state->renderer, state->score_font, state->button_font,
-                game->score, state->stats.high_score, game->snake.length,
-                game->apples_eaten, game->current_speed, game->active_powerups,
-                game->powerup_count, game->mode, time_left);
+            game->score, state->stats.high_score, game->snake.length,
+            game->apples_eaten, game->current_speed, game->active_powerups,
+            game->powerup_count, game->mode, time_left);
 
         if (paused) {
             SDL_SetRenderDrawBlendMode(state->renderer, SDL_BLENDMODE_BLEND);

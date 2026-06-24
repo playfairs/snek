@@ -18,6 +18,8 @@ void draw_hud(SDL_Renderer* renderer, TTF_Font* score_font, TTF_Font* button_fon
 void draw_main_menu(SDL_Renderer* renderer, TTF_Font* large_font, TTF_Font* button_font);
 void draw_settings_menu(SDL_Renderer* renderer, TTF_Font* large_font, TTF_Font* score_font, 
                         TTF_Font* button_font, GameState* state, int current_option);
+void draw_stats_menu(SDL_Renderer* renderer, TTF_Font* large_font, TTF_Font* score_font,
+                     TTF_Font* button_font, GameState* state);
 void draw_game_over(SDL_Renderer* renderer, TTF_Font* large_font, TTF_Font* score_font, 
                    TTF_Font* button_font, int score);
 
