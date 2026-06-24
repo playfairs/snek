@@ -1,6 +1,6 @@
 # Snek ![](https://rv.playfairs.cc/playfairs/snek)
 
-A Snake game with powerups, statistics tracking, and multiple snake skins.
+A simple Snake game with Powerups, Skins, basic stats and bombs!
 
 ## Installation
 
@@ -29,15 +29,14 @@ sudo apt-get install libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev
 make
 ```
 
+To install to Path just run
+```bash
+make install
+```
+
+
 ## Running
 
 ```bash
 ./build/snek
 ```
-
-## Project Structure
-
-- `include/` - Header files
-- `src/` - Implementation files
-- `assets/sfx/` - Sound effect files
-- `data/` - Game statistics and save data
