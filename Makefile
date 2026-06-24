@@ -37,6 +37,10 @@ SOURCES = $(SRC_DIR)/main.c \
           $(SRC_DIR)/powerups/invincible.c \
           $(SRC_DIR)/powerups/frenzy.c \
           $(SRC_DIR)/powerups/pathfind.c \
+          $(SRC_DIR)/items/apple.c \
+          $(SRC_DIR)/items/banana.c \
+          $(SRC_DIR)/items/bomb.c \
+          $(SRC_DIR)/items/items.c \
           $(SRC_DIR)/audio.c
 
 OBJECTS = $(SOURCES:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
@@ -50,11 +54,11 @@ $(TARGET): $(OBJECTS)
 	$(CC) $(OBJECTS) -o $@ $(LDFLAGS)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
-	@mkdir -p $(BUILD_DIR)
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/powerups/%.o: $(SRC_DIR)/powerups/%.c
-	@mkdir -p $(BUILD_DIR)/powerups
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:

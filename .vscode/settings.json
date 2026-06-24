@@ -1,0 +1,5 @@
+{
+    "C_Cpp.errorSquiggles": "disabled"
+} // all errors are just because SDL2/SDL.h isn't found, 
+  // it's available via the flake.nix dev environment, VS Code is just ignoring it.
+  // The code compiles fine.

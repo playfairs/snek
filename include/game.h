@@ -12,11 +12,16 @@ typedef enum {
 } GameStatus;
 
 typedef struct {
+    PowerupType type;
+    double end_time;
+} ActivePowerup;
+
+typedef struct {
     Snake snake;
     Food food;
     Powerup powerup;
-    PowerupType active_powerup;
-    double powerup_end_time;
+    ActivePowerup active_powerups[MAX_POWERUPS];
+    int powerup_count;
     double mode_end_time;
     GameMode mode;
     int score;

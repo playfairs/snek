@@ -26,6 +26,7 @@ typedef struct {
 
 typedef struct {
     Position pos;
+    ItemType type;
     int active;
 } Food;
 

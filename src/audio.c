@@ -12,12 +12,21 @@ void init_audio(AudioState* audio, double volume) {
     if (audio->powerup_sound) {
         Mix_VolumeChunk(audio->powerup_sound, (int)(volume * MIX_MAX_VOLUME));
     }
+
+    audio->explosion_sound = Mix_LoadWAV("assets/sfx/explosion.wav");
+    if (audio->explosion_sound) {
+        Mix_VolumeChunk(audio->explosion_sound, (int)(volume * MIX_MAX_VOLUME));
+    }
 }
 
 void cleanup_audio(AudioState* audio) {
     if (audio->powerup_sound) {
         Mix_FreeChunk(audio->powerup_sound);
         audio->powerup_sound = NULL;
+    }
+    if (audio->explosion_sound) {
+        Mix_FreeChunk(audio->explosion_sound);
+        audio->explosion_sound = NULL;
     }
     Mix_CloseAudio();
 }
@@ -26,5 +35,12 @@ void play_powerup_sound(AudioState* audio, double volume) {
     if (audio->powerup_sound) {
         Mix_VolumeChunk(audio->powerup_sound, (int)(volume * MIX_MAX_VOLUME));
         Mix_PlayChannel(-1, audio->powerup_sound, 0);
+    }
+}
+
+void play_explosion_sound(AudioState* audio, double volume) {
+    if (audio->explosion_sound) {
+        Mix_VolumeChunk(audio->explosion_sound, (int)(volume * MIX_MAX_VOLUME));
+        Mix_PlayChannel(-1, audio->explosion_sound, 0);
     }
 }
