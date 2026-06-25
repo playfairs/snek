@@ -1,10 +1,10 @@
 #include <stdlib.h>
 #include <time.h>
 #include <SDL2/SDL.h>
-#include "powerups.h"
-#include "state.h"
-#include "constants.h"
-#include "game.h"
+#include "powerups/registry.h"
+#include "core/game/state.h"
+#include "core/game/constants.h"
+#include "core/game/game.h"
 
 void spawn_powerup(Powerup* powerup) {
     int max_x = DIS_WIDTH / SNAKE_BLOCK;

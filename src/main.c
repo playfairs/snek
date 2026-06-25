@@ -2,11 +2,14 @@
 #include <stdlib.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
-#include "../include/state.h"
-#include "../include/game.h"
-#include "../include/graphics.h"
-#include "../include/input.h"
-#include "../include/audio.h"
+#include "core/game/state.h"
+#include "core/game/game.h"
+#include "core/graphics/graphics.h"
+#include "core/input/input.h"
+#include "core/audio/audio.h"
+#include "snake/snake.h"
+#include "powerups/registry.h"
+#include "items/registry.h"
 
 typedef enum {
     MENU_MAIN,
