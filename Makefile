@@ -51,6 +51,7 @@ SOURCES = $(SRC_DIR)/main.c \
           $(SRC_DIR)/powerups/invincible/logic.c \
           $(SRC_DIR)/powerups/frenzy/logic.c \
           $(SRC_DIR)/powerups/pathfind/logic.c \
+          $(SRC_DIR)/powerups/pathfind/intelligence.c \
           $(SRC_DIR)/snake/snake.c \
           $(SRC_DIR)/snake/movement.c \
           $(SRC_DIR)/snake/collision.c \

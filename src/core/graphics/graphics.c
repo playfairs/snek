@@ -27,8 +27,116 @@ static Color get_skin_color(SnakeSkin skin, int is_head) {
             return is_head ? (Color){0, 255, 255} : (Color){0, 200, 200};
         case SKIN_NEON:
             return is_head ? (Color){255, 0, 255} : (Color){200, 0, 200};
+        case SKIN_HOLOGRAPHIC:
+            return is_head ? (Color){215, 180, 255} : (Color){170, 235, 255};
+        case SKIN_MONOCHROME:
+            return is_head ? (Color){220, 220, 220} : (Color){110, 110, 110};
+        case SKIN_CHROMATIC:
+            return is_head ? (Color){240, 150, 255} : (Color){90, 220, 240};
+        case SKIN_COSMIC:
+            return is_head ? (Color){190, 140, 255} : (Color){40, 30, 80};
+        case SKIN_CHROME:
+            return is_head ? (Color){220, 225, 235} : (Color){150, 170, 190};
+        case SKIN_BUBBLE:
+            return is_head ? (Color){190, 245, 255} : (Color){140, 220, 235};
+        case SKIN_SHADOW:
+            return is_head ? (Color){140, 110, 190} : (Color){40, 40, 65};
+        case SKIN_SOLAR:
+            return is_head ? (Color){255, 205, 60} : (Color){220, 120, 35};
+        case SKIN_AQUA:
+            return is_head ? (Color){0, 200, 220} : (Color){0, 140, 170};
+        case SKIN_MIDNIGHT:
+            return is_head ? (Color){90, 110, 170} : (Color){25, 30, 55};
         default:
             return is_head ? (Color){GREEN_R, GREEN_G, GREEN_B} : (Color){60, 160, 100};
+    }
+}
+
+static Color get_skin_preview_color(SnakeSkin skin, int index, int is_head) {
+    Color base = get_skin_color(skin, is_head);
+    double time = SDL_GetTicks() / 300.0;
+    switch (skin) {
+        case SKIN_RAINBOW: {
+            double phase = time + index * 0.5;
+            int r = (int)(128 + 127 * sin(phase));
+            int g = (int)(128 + 127 * sin(phase + 2.0));
+            int b = (int)(128 + 127 * sin(phase + 4.0));
+            return (Color){r, g, b};
+        }
+        case SKIN_HOLOGRAPHIC: {
+            double phase = time + index * 0.4;
+            int r = (int)(200 + 55 * sin(phase + 0.5));
+            int g = (int)(185 + 50 * sin(phase + 1.2));
+            int b = (int)(225 + 30 * sin(phase + 2.6));
+            return (Color){r, g, b};
+        }
+        case SKIN_MONOCHROME: {
+            int shade = 110 + index * 10;
+            if (shade > 220) shade = 220;
+            return is_head ? (Color){220, 220, 220} : (Color){shade, shade, shade};
+        }
+        case SKIN_CHROMATIC: {
+            double phase = time + index * 0.3;
+            int r = (int)(140 + 115 * sin(phase + 0.1));
+            int g = (int)(140 + 115 * sin(phase + 2.3));
+            int b = (int)(140 + 115 * sin(phase + 4.5));
+            return (Color){r, g, b};
+        }
+        case SKIN_COSMIC: {
+            double phase = time * 0.5 + index * 0.2;
+            int glow = (int)(20 + 20 * sin(phase));
+            return (Color){
+                base.r + glow > 255 ? 255 : base.r + glow,
+                base.g,
+                base.b + glow > 255 ? 255 : base.b + glow
+            };
+        }
+        case SKIN_CHROME: {
+            double shine = 20 + 20 * fabs(sin(time + index * 0.3));
+            return (Color){
+                base.r + (int)shine > 255 ? 255 : base.r + (int)shine,
+                base.g + (int)shine > 255 ? 255 : base.g + (int)shine,
+                base.b + (int)shine > 255 ? 255 : base.b + (int)shine
+            };
+        }
+        case SKIN_BUBBLE: {
+            double wave = 15 + 15 * sin(time + index * 0.4);
+            return (Color){
+                base.r + (int)wave > 255 ? 255 : base.r + (int)wave,
+                base.g + (int)wave > 255 ? 255 : base.g + (int)wave,
+                base.b + (int)wave > 255 ? 255 : base.b + (int)wave
+            };
+        }
+        case SKIN_SHADOW: {
+            int delta = (index % 2) * 12;
+            return (Color){base.r + delta, base.g + delta / 2, base.b + delta};
+        }
+        case SKIN_SOLAR: {
+            double flare = 25 + 25 * sin(time + index * 0.35);
+            return (Color){
+                base.r,
+                base.g + (int)flare > 255 ? 255 : base.g + (int)flare,
+                base.b
+            };
+        }
+        case SKIN_AQUA: {
+            double ripple = 25 + 25 * sin(time + index * 0.4);
+            return (Color){
+                base.r,
+                base.g + (int)ripple > 255 ? 255 : base.g + (int)ripple,
+                base.b + (int)ripple > 255 ? 255 : base.b + (int)ripple
+            };
+        }
+        case SKIN_MIDNIGHT: {
+            double pulse = 20 + 20 * sin(time * 0.5 + index * 0.2);
+            return (Color){
+                base.r,
+                base.g,
+                base.b + (int)pulse > 255 ? 255 : base.b + (int)pulse
+            };
+        }
+        default:
+            return base;
     }
 }
 
@@ -522,7 +630,10 @@ void draw_settings_menu(SDL_Renderer* renderer, TTF_Font* large_font, TTF_Font* 
     draw_text(renderer, button_font, "Click a row to cycle its value.", muted, right_panel.x + 30, right_panel.y + 78);
     draw_text(renderer, button_font, "Changes save immediately.", muted, right_panel.x + 30, right_panel.y + 102);
 
-    const char* skin_names[] = {"Default", "Blue", "Red", "Rainbow", "Purple", "Gold", "Cyan", "Neon"};
+    const char* skin_names[] = {"Default", "Blue", "Red", "Rainbow", "Purple", "Gold", "Cyan", "Neon",
+                                "Holographic", "Monochrome", "Chromatic", "Cosmic",
+                                "Chrome", "Bubble", "Shadow", "Solar",
+                                "Aqua", "Midnight"};
     const char* mode_names[] = {"Classic", "Challenge", "Time Attack"};
     const char* difficulty_names[] = {"Easy", "Normal", "Hard"};
 
@@ -540,10 +651,11 @@ void draw_settings_menu(SDL_Renderer* renderer, TTF_Font* large_font, TTF_Font* 
         SDL_RenderDrawLine(renderer, preview_box.x, y, preview_box.x + preview_box.w, y);
     }
 
-    for (int i = 0; i < 6; i++) {
-        int px = preview_box.x + 48 + i * SNAKE_BLOCK;
-        int py = preview_box.y + 82;
-        draw_cube(renderer, px, py, SNAKE_BLOCK, get_skin_color(state->settings.current_skin, i == 5), i == 5);
+    for (int i = 0; i < 8; i++) {
+        int px = preview_box.x + 28 + i * SNAKE_BLOCK;
+        int py = preview_box.y + 78;
+        Color preview_color = get_skin_preview_color(state->settings.current_skin, i, i == 7);
+        draw_cube(renderer, px, py, SNAKE_BLOCK, preview_color, i == 7);
     }
 
     SDL_Rect details = {left_panel.x + 24, left_panel.y + 330, left_panel.w - 48, 208};
