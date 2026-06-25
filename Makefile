@@ -50,6 +50,13 @@ SOURCES = $(SRC_DIR)/main.c \
           $(SRC_DIR)/powerups/doublepoints/logic.c \
           $(SRC_DIR)/powerups/invincible/logic.c \
           $(SRC_DIR)/powerups/frenzy/logic.c \
+          $(SRC_DIR)/powerups/magnet/logic.c \
+          $(SRC_DIR)/powerups/freeze/logic.c \
+          $(SRC_DIR)/powerups/shrink/logic.c \
+          $(SRC_DIR)/powerups/grow/logic.c \
+          $(SRC_DIR)/powerups/teleport/logic.c \
+          $(SRC_DIR)/powerups/split/logic.c \
+          \
           $(SRC_DIR)/powerups/pathfind/logic.c \
           $(SRC_DIR)/powerups/pathfind/intelligence.c \
           $(SRC_DIR)/snake/snake.c \

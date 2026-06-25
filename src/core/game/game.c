@@ -85,6 +85,9 @@ void init_game(GameContext* game, GameState* state) {
     game->powerup.spawn_time = 0.0;
     game->powerup_count = 0;
     game->secondary_food.active = 0;
+    game->frozen = 0;
+    game->last_powerup_text[0] = '\0';
+    game->last_powerup_display_time = 0.0;
     game->mode = state->settings.mode;
 
     double current_time = SDL_GetTicks() / 1000.0;
@@ -189,6 +192,7 @@ GameStatus game_loop(GameContext* game, GameState* state, AudioState* audio) {
             }
 
             int bypass_collision = 0;
+            int frozen = 0;
             for (int i = 0; i < game->powerup_count; i++) {
                 PowerupType type = game->active_powerups[i].type;
                 if (type == POWERUP_INVINCIBLE || type == POWERUP_PATHFIND) {
@@ -196,16 +200,22 @@ GameStatus game_loop(GameContext* game, GameState* state, AudioState* audio) {
                     break;
                 }
             }
-            update_snake_position(&game->snake);
+            frozen = has_active_powerup(game, POWERUP_FREEZE);
+            game->frozen = frozen;
+            if (!frozen) {
+                update_snake_position(&game->snake);
+            }
 
             if (!bypass_collision && check_self_collision(&game->snake)) {
                 game->status = GAME_OVER;
             }
 
-            if (check_food_collision(&game->snake, &game->food)) {
+            if (game->food.active && check_food_collision(&game->snake, &game->food)) {
                 ItemType item_type = game->food.type;
+                game->food.active = 0;
+                int previous_tail_index = game->snake.length > 0 ? game->snake.length - 1 : 0;
                 game->snake.length++;
-                game->snake.segments[game->snake.length - 1] = game->snake.segments[game->snake.length - 2];
+                game->snake.segments[game->snake.length - 1] = game->snake.segments[previous_tail_index];
 
                 game->apples_eaten++;
                 state->stats.total_apples++;
@@ -263,7 +273,7 @@ GameStatus game_loop(GameContext* game, GameState* state, AudioState* audio) {
         }
 
         int glow_active = has_active_powerup(game, POWERUP_INVINCIBLE) || has_active_powerup(game, POWERUP_PATHFIND);
-        draw_snake(state->renderer, &game->snake, glow_active);
+        draw_snake(state->renderer, &game->snake, glow_active, game->frozen);
 
         double time_left = 0.0;
         if (game->mode == MODE_TIME_ATTACK) {
@@ -276,7 +286,8 @@ GameStatus game_loop(GameContext* game, GameState* state, AudioState* audio) {
         draw_hud(state->renderer, state->score_font, state->button_font,
             game->score, state->stats.high_score, game->snake.length,
             game->apples_eaten, game->current_speed, game->active_powerups,
-            game->powerup_count, game->mode, time_left);
+            game->powerup_count, game->mode, time_left,
+            game->last_powerup_text, game->last_powerup_display_time, current_time);
 
         if (paused) {
             SDL_SetRenderDrawBlendMode(state->renderer, SDL_BLENDMODE_BLEND);

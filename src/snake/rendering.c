@@ -131,7 +131,7 @@ static Color apply_powerup_glow(Color base, int glow_active) {
     };
 }
 
-void draw_snake(SDL_Renderer* renderer, const Snake* snake, int glow_active) {
+void draw_snake(SDL_Renderer* renderer, const Snake* snake, int glow_active, int frozen) {
     for (int i = 0; i < snake->length - 1; i++) {
         Color base_color = get_skin_color(snake->skin, 0);
 
@@ -240,6 +240,12 @@ void draw_snake(SDL_Renderer* renderer, const Snake* snake, int glow_active) {
         }
 
         Color color = apply_powerup_glow(base_color, glow_active);
+        if (frozen) {
+            int r = (color.r + 180) / 2;
+            int g = (color.g + 220) / 2;
+            int b = (color.b + 255) / 2;
+            color = (Color){r, g, b};
+        }
         draw_cube(renderer, snake->segments[i].x, snake->segments[i].y, SNAKE_BLOCK, color, 0);
     }
 
@@ -280,6 +286,12 @@ void draw_snake(SDL_Renderer* renderer, const Snake* snake, int glow_active) {
         }
 
         Color color = apply_powerup_glow(base_color, glow_active);
+        if (frozen) {
+            int r = (color.r + 180) / 2;
+            int g = (color.g + 220) / 2;
+            int b = (color.b + 255) / 2;
+            color = (Color){r, g, b};
+        }
         draw_cube(renderer, head.x, head.y, SNAKE_BLOCK, color, 1);
 
         SDL_SetRenderDrawColor(renderer, 0, 200, 0, 255);

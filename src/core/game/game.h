@@ -31,6 +31,9 @@ typedef struct {
     double powerup_spawn_time;
     int base_speed;
     int current_speed;
+    int frozen;
+    char last_powerup_text[64];
+    double last_powerup_display_time;
     GameStatus status;
 } GameContext;
 

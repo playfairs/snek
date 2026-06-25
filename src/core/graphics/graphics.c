@@ -10,6 +10,7 @@
 #include "items/banana/banana.h"
 #include "items/bomb/bomb.h"
 #include "core/game/constants.h"
+#include "powerups/registry.h"
 
 static Color get_skin_color(SnakeSkin skin, int is_head) {
     switch (skin) {
@@ -143,11 +144,17 @@ static Color get_skin_preview_color(SnakeSkin skin, int index, int is_head) {
 static Color get_powerup_color(PowerupType type) {
     switch (type) {
         case POWERUP_SPEED_BOOST: return (Color){100, 200, 255};
-        case POWERUP_SLOW_MO: return (Color){180, 100, 255};
-        case POWERUP_DOUBLE_POINTS: return (Color){255, 200, 80};
-        case POWERUP_INVINCIBLE: return (Color){255, 100, 200};
-        case POWERUP_PATHFIND: return (Color){100, 255, 150};
-        case POWERUP_FRENZY: return (Color){255, 150, 50};
+        case POWERUP_SLOW_MO: return (Color){145, 80, 255};
+        case POWERUP_DOUBLE_POINTS: return (Color){255, 215, 70};
+        case POWERUP_INVINCIBLE: return (Color){255, 80, 180};
+        case POWERUP_PATHFIND: return (Color){130, 255, 120};
+        case POWERUP_FRENZY: return (Color){255, 140, 35};
+        case POWERUP_MAGNET: return (Color){220, 45, 45};
+        case POWERUP_FREEZE: return (Color){155, 220, 255};
+        case POWERUP_SHRINK: return (Color){128, 0, 32};
+        case POWERUP_GROW: return (Color){240, 230, 130};
+        case POWERUP_TELEPORT: return (Color){170, 220, 255};
+        case POWERUP_SPLIT: return (Color){160, 0, 35};
         default: return (Color){WHITE_R, WHITE_G, WHITE_B};
     }
 }
@@ -256,9 +263,9 @@ void draw_cube(SDL_Renderer* renderer, int x, int y, int size, Color color, int 
 
     if (is_head) {
         Color inner_highlight = {
-            color.r + 100 > 255 ? 255 : color.r + 100,
-            color.g + 100 > 255 ? 255 : color.g + 100,
-            color.b + 60 > 255 ? 255 : color.b + 60
+            color.r + 40 > 255 ? 255 : color.r + 40,
+            color.g + 40 > 255 ? 255 : color.g + 40,
+            color.b + 40 > 255 ? 255 : color.b + 40
         };
         SDL_Rect inner_rect = {rect.x + 3, rect.y + 3, size / 3, size / 3};
         SDL_SetRenderDrawColor(renderer, inner_highlight.r, inner_highlight.g, inner_highlight.b, 255);
@@ -312,6 +319,15 @@ void draw_food(SDL_Renderer* renderer, Food* food) {
         case ITEM_BOMB:
             draw_bomb(renderer, food);
             break;
+        case ITEM_CHERRY:
+        case ITEM_STRAWBERRY:
+        case ITEM_GRAPE:
+        case ITEM_ORANGE:
+        case ITEM_COOKIE:
+        case ITEM_CANDY:
+        case ITEM_PUMPKIN:
+            draw_apple(renderer, food);
+            break;
         default:
             draw_apple(renderer, food);
             break;
@@ -350,7 +366,7 @@ void draw_powerup(SDL_Renderer* renderer, Powerup* powerup) {
 void draw_hud(SDL_Renderer* renderer, TTF_Font* score_font, TTF_Font* button_font,
               int score, int high_score, int snake_length, int apples_collected,
               int current_speed, const ActivePowerup active_powerups[], int active_powerup_count,
-              GameMode mode, double time_left) {
+              GameMode mode, double time_left, const char* last_powerup_text, double last_powerup_display_time, double current_time) {
     SDL_Rect header_rect = {0, 0, DIS_WIDTH, HEADER_HEIGHT};
     SDL_SetRenderDrawColor(renderer, 12, 18, 28, 255);
     SDL_RenderFillRect(renderer, &header_rect);
@@ -493,14 +509,38 @@ void draw_hud(SDL_Renderer* renderer, TTF_Font* score_font, TTF_Font* button_fon
         SDL_DestroyTexture(timer_tex);
     }
 
+    if (last_powerup_text && last_powerup_text[0] && current_time - last_powerup_display_time < 2.5) {
+        SDL_Rect pickup_rect = {DIS_WIDTH / 2 - 180, HEADER_HEIGHT + 12, 360, 28};
+        SDL_SetRenderDrawColor(renderer, 24, 34, 48, 230);
+        SDL_RenderFillRect(renderer, &pickup_rect);
+        SDL_SetRenderDrawColor(renderer, 80, 150, 220, 255);
+        SDL_RenderDrawRect(renderer, &pickup_rect);
+
+        SDL_Surface* pickup_surf = TTF_RenderText_Blended(button_font, last_powerup_text, accent);
+        if (pickup_surf) {
+            SDL_Texture* pickup_tex = SDL_CreateTextureFromSurface(renderer, pickup_surf);
+            SDL_Rect pickup_text_rect = {pickup_rect.x + (pickup_rect.w - pickup_surf->w) / 2,
+                                         pickup_rect.y + (pickup_rect.h - pickup_surf->h) / 2,
+                                         pickup_surf->w, pickup_surf->h};
+            SDL_RenderCopy(renderer, pickup_tex, NULL, &pickup_text_rect);
+            SDL_DestroyTexture(pickup_tex);
+            SDL_FreeSurface(pickup_surf);
+        }
+    }
+
     if (active_powerup_count > 0) {
-        const char* powerup_names[] = {"SPEED BOOST", "SLOW MOTION", "2X POINTS", "INVINCIBLE", "PATHFIND", "FRENZY"};
         int timer_x = DIS_WIDTH - 268;
         int timer_y = GAME_AREA_TOP + 12;
+        if (active_powerup_count > MAX_POWERUPS) active_powerup_count = MAX_POWERUPS;
 
         for (int i = 0; i < active_powerup_count; i++) {
             PowerupType type = active_powerups[i].type;
-            const char* name = powerup_names[type];
+            PowerupInfo info = get_powerup_info(type);
+            if (!info.duration || info.duration <= 0.0) {
+                continue;
+            }
+
+            const char* name = info.name ? info.name : "UNKNOWN";
             double powerup_time_left = active_powerups[i].end_time - SDL_GetTicks() / 1000.0;
             if (powerup_time_left < 0.0) powerup_time_left = 0.0;
             char power_text[64];
@@ -634,7 +674,7 @@ void draw_settings_menu(SDL_Renderer* renderer, TTF_Font* large_font, TTF_Font* 
                                 "Holographic", "Monochrome", "Chromatic", "Cosmic",
                                 "Chrome", "Bubble", "Shadow", "Solar",
                                 "Aqua", "Midnight"};
-    const char* mode_names[] = {"Classic", "Challenge", "Time Attack"};
+    const char* mode_names[] = {"Classic", "Challenge", "Time Attack", "Endless", "Berserk", "Maze", "Survival", "Ghost Run", "Inverse", "Rainbow Run"};
     const char* difficulty_names[] = {"Easy", "Normal", "Hard"};
 
     draw_text(renderer, button_font, "SKIN PREVIEW", amber, left_panel.x + 24, left_panel.y + 28);
