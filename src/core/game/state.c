@@ -59,7 +59,6 @@ void cleanup_state(GameState* state) {
 }
 
 int load_stats(GameStats* stats) {
-    /* Load defaults from data/stats.toml if available */
     FILE* file = fopen("data/stats.toml", "r");
     char line[256];
     if (file) {
@@ -79,7 +78,6 @@ int load_stats(GameStats* stats) {
         fclose(file);
     }
 
-    /* Override with user stats if present (~/.config/snek/stats.toml) */
     char user_path[PATH_MAX];
     char* home = getenv("HOME");
     if (!home) {
@@ -91,7 +89,6 @@ int load_stats(GameStats* stats) {
     }
     file = fopen(user_path, "r");
     if (!file) {
-        /* no user file - leave defaults loaded (or zeros) */
         return 1;
     }
     while (fgets(line, sizeof(line), file)) {

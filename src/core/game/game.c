@@ -58,7 +58,6 @@ static int has_active_powerup(GameContext* game, PowerupType type) {
     return 0;
 }
 
-/* Snake helper implementations moved to `src/snake/` modules. */
 
 static int get_base_speed(Difficulty difficulty) {
     switch (difficulty) {
