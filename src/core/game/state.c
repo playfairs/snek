@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -58,71 +59,106 @@ void cleanup_state(GameState* state) {
     }
 }
 
-int load_stats(GameStats* stats) {
-    FILE* file = fopen("data/stats.toml", "r");
+static char* trim_whitespace(char* str) {
+    char* end;
+    while (isspace((unsigned char)*str)) str++;
+    if (*str == '\0') return str;
+    end = str + strlen(str) - 1;
+    while (end > str && isspace((unsigned char)*end)) end--;
+    end[1] = '\0';
+    return str;
+}
+
+static void parse_stats_line(const char* raw_line, GameStats* stats) {
     char line[256];
-    if (file) {
-        while (fgets(line, sizeof(line), file)) {
-            if (strncmp(line, "high_score", 10) == 0) {
-                sscanf(line, "high_score = %d", &stats->high_score);
-            } else if (strncmp(line, "total_apples", 12) == 0) {
-                sscanf(line, "total_apples = %d", &stats->total_apples);
-            } else if (strncmp(line, "games_played", 13) == 0) {
-                sscanf(line, "games_played = %d", &stats->games_played);
-            } else if (strncmp(line, "powerups_collected", 19) == 0) {
-                sscanf(line, "powerups_collected = %d", &stats->powerups_collected);
-            } else if (strncmp(line, "best_time", 9) == 0) {
-                sscanf(line, "best_time = %lf", &stats->best_time);
-            }
-        }
-        fclose(file);
+    strncpy(line, raw_line, sizeof(line));
+    line[sizeof(line) - 1] = '\0';
+    char* trimmed = trim_whitespace(line);
+    int value;
+
+    if (sscanf(trimmed, "high_score = %d", &value) == 1) {
+        stats->high_score = value;
+    } else if (sscanf(trimmed, "total_apples = %d", &value) == 1) {
+        stats->total_apples = value;
+    } else if (sscanf(trimmed, "games_played = %d", &value) == 1) {
+        stats->games_played = value;
+    } else if (sscanf(trimmed, "powerups_collected = %d", &value) == 1) {
+        stats->powerups_collected = value;
+    } else if (sscanf(trimmed, "best_time = %lf", &stats->best_time) == 1) {
+    }
+}
+
+static int load_stats_file(const char* path, GameStats* stats) {
+    char line[256];
+    FILE* file = fopen(path, "r");
+    if (!file) {
+        return 0;
     }
 
-    char user_path[PATH_MAX];
-    char* home = getenv("HOME");
-    if (!home) {
-        return 1;
-    }
-    int n = snprintf(user_path, sizeof(user_path), "%s/.config/snek/stats.toml", home);
-    if (n < 0 || (size_t)n >= sizeof(user_path)) {
-        return 1;
-    }
-    file = fopen(user_path, "r");
-    if (!file) {
-        return 1;
-    }
     while (fgets(line, sizeof(line), file)) {
-        if (strncmp(line, "high_score", 10) == 0) {
-            sscanf(line, "high_score = %d", &stats->high_score);
-        } else if (strncmp(line, "total_apples", 12) == 0) {
-            sscanf(line, "total_apples = %d", &stats->total_apples);
-        } else if (strncmp(line, "games_played", 13) == 0) {
-            sscanf(line, "games_played = %d", &stats->games_played);
-        } else if (strncmp(line, "powerups_collected", 19) == 0) {
-            sscanf(line, "powerups_collected = %d", &stats->powerups_collected);
-        } else if (strncmp(line, "best_time", 9) == 0) {
-            sscanf(line, "best_time = %lf", &stats->best_time);
-        }
+        parse_stats_line(line, stats);
     }
     fclose(file);
+    return 1;
+}
+
+static const char* get_xdg_config_dir(char* buffer, size_t size) {
+    const char* config_home = getenv("XDG_CONFIG_HOME");
+    if (config_home && *config_home) {
+        int n = snprintf(buffer, size, "%s/snek", config_home);
+        if (n >= 0 && (size_t)n < size) {
+            return buffer;
+        }
+    }
+    return NULL;
+}
+
+static const char* get_home_config_dir(char* buffer, size_t size) {
+    const char* home = getenv("HOME");
+    if (home && *home) {
+        int n = snprintf(buffer, size, "%s/.config/snek", home);
+        if (n >= 0 && (size_t)n < size) {
+            return buffer;
+        }
+    }
+    return NULL;
+}
+
+int load_stats(GameStats* stats) {
+    char config_dir[PATH_MAX];
+    char user_path[PATH_MAX];
+
+    load_stats_file("data/stats.toml", stats);
+
+    const char* stats_dir = get_xdg_config_dir(config_dir, sizeof(config_dir));
+    if (stats_dir) {
+        int n = snprintf(user_path, sizeof(user_path), "%s/stats.toml", stats_dir);
+        if (n >= 0 && (size_t)n < sizeof(user_path)) {
+            load_stats_file(user_path, stats);
+        }
+    }
+
+    stats_dir = get_home_config_dir(config_dir, sizeof(config_dir));
+    if (stats_dir) {
+        int n = snprintf(user_path, sizeof(user_path), "%s/stats.toml", stats_dir);
+        if (n >= 0 && (size_t)n < sizeof(user_path)) {
+            load_stats_file(user_path, stats);
+        }
+    }
+
     return 1;
 }
 
 void save_stats(GameStats* stats) {
     char dir[PATH_MAX];
     char path[PATH_MAX];
-    char* home = getenv("HOME");
-    if (home) {
-        int nd = snprintf(dir, sizeof(dir), "%s/.config/snek", home);
-        if (nd < 0 || (size_t)nd >= sizeof(dir)) {
-            strncpy(dir, "data", sizeof(dir));
-            dir[sizeof(dir)-1] = '\0';
-        }
+    const char* stats_dir = get_home_config_dir(dir, sizeof(dir));
+    if (stats_dir) {
         struct stat st = {0};
-        if (stat(dir, &st) == -1) {
-            mkdir(dir, 0700);
+        if (stat(stats_dir, &st) == -1) {
+            mkdir(stats_dir, 0700);
         }
-        int n = snprintf(path, sizeof(path), "%s/stats.toml", dir);
+        int n = snprintf(path, sizeof(path), "%s/stats.toml", stats_dir);
         if (n < 0 || (size_t)n >= sizeof(path)) {
             strncpy(path, "data/stats.toml", sizeof(path));
             path[sizeof(path)-1] = '\0';
@@ -132,6 +168,7 @@ void save_stats(GameStats* stats) {
     }
     FILE* file = fopen(path, "w");
     if (!file) {
+        fprintf(stderr, "save_stats: failed to open '%s' for writing\n", path);
         return;
     }
     
@@ -163,17 +200,17 @@ int load_settings(GameSettings* settings) {
     
     char line[256];
     while (fgets(line, sizeof(line), file)) {
-        if (strncmp(line, "sound_enabled", 14) == 0) {
+        if (strncmp(line, "sound_enabled", sizeof("sound_enabled") - 1) == 0) {
             sscanf(line, "sound_enabled = %d", &settings->sound_enabled);
-        } else if (strncmp(line, "music_enabled", 14) == 0) {
+        } else if (strncmp(line, "music_enabled", sizeof("music_enabled") - 1) == 0) {
             sscanf(line, "music_enabled = %d", &settings->music_enabled);
-        } else if (strncmp(line, "volume", 6) == 0) {
+        } else if (strncmp(line, "volume", sizeof("volume") - 1) == 0) {
             sscanf(line, "volume = %lf", &settings->volume);
-        } else if (strncmp(line, "current_skin", 12) == 0) {
+        } else if (strncmp(line, "current_skin", sizeof("current_skin") - 1) == 0) {
             sscanf(line, "current_skin = %d", (int*)&settings->current_skin);
-        } else if (strncmp(line, "difficulty", 10) == 0) {
+        } else if (strncmp(line, "difficulty", sizeof("difficulty") - 1) == 0) {
             sscanf(line, "difficulty = %d", (int*)&settings->difficulty);
-        } else if (strncmp(line, "mode", 4) == 0) {
+        } else if (strncmp(line, "mode", sizeof("mode") - 1) == 0) {
             sscanf(line, "mode = %d", (int*)&settings->mode);
         }
     }
