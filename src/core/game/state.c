@@ -59,23 +59,41 @@ void cleanup_state(GameState* state) {
 }
 
 int load_stats(GameStats* stats) {
-    char path[PATH_MAX];
-    char* home = getenv("HOME");
-    if (home) {
-        int n = snprintf(path, sizeof(path), "%s/.config/snek/stats.toml", home);
-        if (n < 0 || (size_t)n >= sizeof(path)) {
-            strncpy(path, "data/stats.toml", sizeof(path));
-            path[sizeof(path)-1] = '\0';
-        }
-    } else {
-        snprintf(path, sizeof(path), "data/stats.toml");
-    }
-    FILE* file = fopen(path, "r");
-    if (!file) {
-        return 0;
-    }
-    
+    /* Load defaults from data/stats.toml if available */
+    FILE* file = fopen("data/stats.toml", "r");
     char line[256];
+    if (file) {
+        while (fgets(line, sizeof(line), file)) {
+            if (strncmp(line, "high_score", 10) == 0) {
+                sscanf(line, "high_score = %d", &stats->high_score);
+            } else if (strncmp(line, "total_apples", 12) == 0) {
+                sscanf(line, "total_apples = %d", &stats->total_apples);
+            } else if (strncmp(line, "games_played", 13) == 0) {
+                sscanf(line, "games_played = %d", &stats->games_played);
+            } else if (strncmp(line, "powerups_collected", 19) == 0) {
+                sscanf(line, "powerups_collected = %d", &stats->powerups_collected);
+            } else if (strncmp(line, "best_time", 9) == 0) {
+                sscanf(line, "best_time = %lf", &stats->best_time);
+            }
+        }
+        fclose(file);
+    }
+
+    /* Override with user stats if present (~/.config/snek/stats.toml) */
+    char user_path[PATH_MAX];
+    char* home = getenv("HOME");
+    if (!home) {
+        return 1;
+    }
+    int n = snprintf(user_path, sizeof(user_path), "%s/.config/snek/stats.toml", home);
+    if (n < 0 || (size_t)n >= sizeof(user_path)) {
+        return 1;
+    }
+    file = fopen(user_path, "r");
+    if (!file) {
+        /* no user file - leave defaults loaded (or zeros) */
+        return 1;
+    }
     while (fgets(line, sizeof(line), file)) {
         if (strncmp(line, "high_score", 10) == 0) {
             sscanf(line, "high_score = %d", &stats->high_score);

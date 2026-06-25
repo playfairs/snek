@@ -538,6 +538,15 @@ int main(int argc, char* argv[]) {
                 GameContext game;
                 init_game(&game, &state);
                 GameStatus status = game_loop(&game, &state, &audio);
+
+                /* Update best time and persist stats if this playthrough yielded a new best */
+                double end_time = SDL_GetTicks() / 1000.0;
+                double elapsed = end_time - game.start_time;
+                if (elapsed > 0.0 && elapsed > state.stats.best_time) {
+                    state.stats.best_time = elapsed;
+                    save_stats(&state.stats);
+                }
+
                 cleanup_game(&game);
 
                 if (status == GAME_QUIT) {
