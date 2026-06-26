@@ -237,7 +237,7 @@ GameStatus game_loop(GameContext* game, GameState* state, AudioState* audio) {
                 spawn_primary_food(game);
             } else if (game->secondary_food.active &&
                        check_food_collision(&game->snake, &game->secondary_food)) {
-                if (has_active_powerup(game, POWERUP_INVINCIBLE)) {
+                if (has_active_powerup(game, POWERUP_INVINCIBLE) || has_active_powerup(game, POWERUP_PATHFIND)) {
                     game->secondary_food.active = 0;
                 } else {
                     game->status = GAME_OVER;

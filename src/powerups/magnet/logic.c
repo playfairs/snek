@@ -89,7 +89,7 @@ void magnet_update(GameContext* game) {
         }
     }
 
-    if (game->secondary_food.active && is_near_head(&head, &game->secondary_food.pos, range)) {
+    if (game->secondary_food.active && game->secondary_food.type != ITEM_BOMB && is_near_head(&head, &game->secondary_food.pos, range)) {
         move_toward_head(&game->secondary_food.pos, &head);
         clamp_position(&game->secondary_food.pos);
         if (positions_equal(&head, &game->secondary_food.pos)) {
