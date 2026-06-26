@@ -142,15 +142,23 @@ static MenuState main_menu_loop(GameState* state, AudioState* audio) {
     return MENU_MAIN;
 }
 
-static MenuState settings_menu_loop(GameState* state) {
+static MenuState settings_menu_loop(GameState* state, AudioState* audio) {
     int running = 1;
 
-    const char* skin_names[] = {"Default", "Blue", "Red", "Rainbow", "Purple", "Gold", "Cyan", "Neon"};
+    const char* skin_names[] = {
+        "Default", "Blue", "Red", "Rainbow", "Purple", "Gold", "Cyan", "Neon",
+        "Holographic", "Monochrome", "Chromatic", "Cosmic",
+        "Chrome", "Bubble", "Shadow", "Solar",
+        "Aqua", "Midnight"
+    };
     const char* sound_names[] = {"On", "Off"};
     const char* music_names[] = {"On", "Off"};
     const char* volume_names[] = {"30%", "50%", "70%", "100%"};
     const double volume_values[] = {0.3, 0.5, 0.7, 1.0};
-    const char* mode_names[] = {"Classic", "Challenge", "Time Attack"};
+    const char* mode_names[] = {
+        "Classic", "Challenge", "Time Attack", "Endless", "Berserk",
+        "Maze", "Survival", "Ghost Run", "Inverse", "Rainbow Run"
+    };
     const char* difficulty_names[] = {"Easy", "Normal", "Hard"};
 
     int skin_index = state->settings.current_skin;
@@ -166,6 +174,16 @@ static MenuState settings_menu_loop(GameState* state) {
     }
     int difficulty_index = state->settings.difficulty;
     int mode_index = state->settings.mode;
+
+    if (skin_index < 0 || skin_index >= SKIN_COUNT) {
+        skin_index = SKIN_DEFAULT;
+    }
+    if (difficulty_index < 0 || difficulty_index >= DIFFICULTY_COUNT) {
+        difficulty_index = DIFFICULTY_NORMAL;
+    }
+    if (mode_index < 0 || mode_index >= MODE_COUNT) {
+        mode_index = MODE_CLASSIC;
+    }
 
     int button_width = 380;
     int button_height = 50;
@@ -221,6 +239,9 @@ static MenuState settings_menu_loop(GameState* state) {
             sound_index = (sound_index + 1) % 2;
             state->settings.sound_enabled = sound_index == 0;
             save_settings(&state->settings);
+            if (state->settings.sound_enabled && audio) {
+                play_pickup_sound(audio, state->settings.volume);
+            }
         }
 
         char music_text[64];
@@ -529,7 +550,7 @@ int main(int argc, char* argv[]) {
                 }
                 break;
             case MENU_SETTINGS:
-                current_menu = settings_menu_loop(&state);
+                current_menu = settings_menu_loop(&state, &audio);
                 break;
             case MENU_STATS:
                 current_menu = stats_menu_loop(&state);

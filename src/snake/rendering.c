@@ -131,6 +131,15 @@ static Color apply_powerup_glow(Color base, int glow_active) {
     };
 }
 
+static Color get_holographic_color(int index) {
+    double time = SDL_GetTicks() / 300.0;
+    double phase = time + index * 0.4;
+    int r = clamp_color((int)(200 + 55 * sin(phase + 0.5)));
+    int g = clamp_color((int)(185 + 50 * sin(phase + 1.2)));
+    int b = clamp_color((int)(225 + 30 * sin(phase + 2.6)));
+    return (Color){r, g, b};
+}
+
 void draw_snake(SDL_Renderer* renderer, const Snake* snake, int glow_active, int frozen) {
     for (int i = 0; i < snake->length - 1; i++) {
         Color base_color = get_skin_color(snake->skin, 0);
@@ -158,21 +167,16 @@ void draw_snake(SDL_Renderer* renderer, const Snake* snake, int glow_active, int
                 base_color.b + glow > 255 ? 255 : base_color.b + glow
             };
         } else if (snake->skin == SKIN_HOLOGRAPHIC) {
-            double time = SDL_GetTicks() / 400.0;
-            double phase = time + i * 0.35;
-            int r = (int)(200 + 50 * sin(phase + 0.5));
-            int g = (int)(185 + 50 * sin(phase + 1.1));
-            int b = (int)(220 + 40 * sin(phase + 2.3));
-            base_color = (Color){r, g, b};
+            base_color = get_holographic_color(i);
         } else if (snake->skin == SKIN_MONOCHROME) {
             int shade = 120 + (i % 3) * 12;
             base_color = (Color){shade, shade, shade};
         } else if (snake->skin == SKIN_CHROMATIC) {
-            double time = SDL_GetTicks() / 220.0;
-            double phase = time + i * 0.4;
-            int r = (int)(120 + 120 * sin(phase + 0.0));
-            int g = (int)(120 + 120 * sin(phase + 2.0));
-            int b = (int)(120 + 120 * sin(phase + 4.0));
+            double time = SDL_GetTicks() / 240.0;
+            double phase = time + i * 0.35;
+            int r = clamp_color((int)(160 + 80 * sin(phase)));
+            int g = clamp_color((int)(120 + 80 * sin(phase + 2.1)));
+            int b = clamp_color((int)(200 + 55 * sin(phase + 4.2)));
             base_color = (Color){r, g, b};
         } else if (snake->skin == SKIN_COSMIC) {
             double time = SDL_GetTicks() / 500.0;
@@ -275,6 +279,8 @@ void draw_snake(SDL_Renderer* renderer, const Snake* snake, int glow_active, int
                 base_color.g,
                 base_color.b + glow > 255 ? 255 : base_color.b + glow
             };
+        } else if (snake->skin == SKIN_HOLOGRAPHIC) {
+            base_color = get_holographic_color(snake->length - 1);
         } else if (snake->skin == SKIN_GOLD) {
             double shimmer = (SDL_GetTicks() % 300) / 300.0;
             int shine = (int)(50 * (0.5 + 0.5 * sin(shimmer * 2 * M_PI)));

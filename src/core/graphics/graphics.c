@@ -12,6 +12,12 @@
 #include "core/game/constants.h"
 #include "powerups/registry.h"
 
+static int clamp_color(int value) {
+    if (value < 0) return 0;
+    if (value > 255) return 255;
+    return value;
+}
+
 static Color get_skin_color(SnakeSkin skin, int is_head) {
     switch (skin) {
         case SKIN_BLUE:
@@ -66,9 +72,9 @@ static Color get_skin_preview_color(SnakeSkin skin, int index, int is_head) {
         }
         case SKIN_HOLOGRAPHIC: {
             double phase = time + index * 0.4;
-            int r = (int)(200 + 55 * sin(phase + 0.5));
-            int g = (int)(185 + 50 * sin(phase + 1.2));
-            int b = (int)(225 + 30 * sin(phase + 2.6));
+            int r = clamp_color((int)(180 + 30 * sin(phase + 0.5) + 10 * sin(2 * phase + 0.8)));
+            int g = clamp_color((int)(190 + 28 * sin(phase + 1.2) + 8 * sin(2 * phase + 0.6)));
+            int b = clamp_color((int)(220 + 24 * sin(phase + 2.6) + 6 * sin(2 * phase + 1.9)));
             return (Color){r, g, b};
         }
         case SKIN_MONOCHROME: {
@@ -77,10 +83,10 @@ static Color get_skin_preview_color(SnakeSkin skin, int index, int is_head) {
             return is_head ? (Color){220, 220, 220} : (Color){shade, shade, shade};
         }
         case SKIN_CHROMATIC: {
-            double phase = time + index * 0.3;
-            int r = (int)(140 + 115 * sin(phase + 0.1));
-            int g = (int)(140 + 115 * sin(phase + 2.3));
-            int b = (int)(140 + 115 * sin(phase + 4.5));
+            double phase = time + index * 0.32;
+            int r = clamp_color((int)(160 + 80 * sin(phase)));
+            int g = clamp_color((int)(120 + 80 * sin(phase + 2.1)));
+            int b = clamp_color((int)(200 + 55 * sin(phase + 4.2)));
             return (Color){r, g, b};
         }
         case SKIN_COSMIC: {
@@ -677,8 +683,21 @@ void draw_settings_menu(SDL_Renderer* renderer, TTF_Font* large_font, TTF_Font* 
     const char* mode_names[] = {"Classic", "Challenge", "Time Attack", "Endless", "Berserk", "Maze", "Survival", "Ghost Run", "Inverse", "Rainbow Run"};
     const char* difficulty_names[] = {"Easy", "Normal", "Hard"};
 
+    SnakeSkin skin_index = state->settings.current_skin;
+    if (skin_index < 0 || skin_index >= SKIN_COUNT) {
+        skin_index = SKIN_DEFAULT;
+    }
+    GameMode mode_index = state->settings.mode;
+    if (mode_index < 0 || mode_index >= MODE_COUNT) {
+        mode_index = MODE_CLASSIC;
+    }
+    Difficulty difficulty_index = state->settings.difficulty;
+    if (difficulty_index < 0 || difficulty_index >= DIFFICULTY_COUNT) {
+        difficulty_index = DIFFICULTY_NORMAL;
+    }
+
     draw_text(renderer, button_font, "SKIN PREVIEW", amber, left_panel.x + 24, left_panel.y + 28);
-    draw_text(renderer, score_font, skin_names[state->settings.current_skin], white, left_panel.x + 24, left_panel.y + 58);
+    draw_text(renderer, score_font, skin_names[skin_index], white, left_panel.x + 24, left_panel.y + 58);
 
     SDL_Rect preview_box = {left_panel.x + 24, left_panel.y + 112, left_panel.w - 48, 190};
     fill_rect(renderer, preview_box, (Color){12, 18, 26});
