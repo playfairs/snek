@@ -107,7 +107,7 @@ static MenuState main_menu_loop(GameState* state, AudioState* audio) {
 
         SDL_GetMouseState(&mouse_x, &mouse_y);
 
-        draw_main_menu(state->renderer, state->large_font, state->button_font);
+        draw_main_menu(state->renderer, state->large_font, state->button_font, state->settings.current_skin);
 
         int play_clicked = draw_button(state->renderer, state->button_font, "PLAY GAME",
                                        start_x, button_y, button_width, button_height,

@@ -147,6 +147,46 @@ static Color get_skin_preview_color(SnakeSkin skin, int index, int is_head) {
     }
 }
 
+static int preview_menu_items_initialized = 0;
+static int preview_apple_col;
+static int preview_apple_row;
+static int preview_bomb_col;
+static int preview_bomb_row;
+static int preview_powerup_col;
+static int preview_powerup_row;
+static int preview_snake_col[8];
+static int preview_snake_row[8];
+
+static void init_main_menu_preview_items(void) {
+    preview_apple_col = 9;
+    preview_apple_row = 1;
+
+    preview_bomb_col = 1;
+    preview_bomb_row = 4;
+
+    preview_powerup_col = 3;
+    preview_powerup_row = 6;
+
+    preview_snake_col[0] = 2;
+    preview_snake_row[0] = 2;
+    preview_snake_col[1] = 3;
+    preview_snake_row[1] = 2;
+    preview_snake_col[2] = 4;
+    preview_snake_row[2] = 2;
+    preview_snake_col[3] = 5;
+    preview_snake_row[3] = 2;
+    preview_snake_col[4] = 6;
+    preview_snake_row[4] = 2;
+    preview_snake_col[5] = 6;
+    preview_snake_row[5] = 3;
+    preview_snake_col[6] = 6;
+    preview_snake_row[6] = 4;
+    preview_snake_col[7] = 6;
+    preview_snake_row[7] = 5;
+
+    preview_menu_items_initialized = 1;
+}
+
 static Color get_powerup_color(PowerupType type) {
     switch (type) {
         case POWERUP_SPEED_BOOST: return (Color){100, 200, 255};
@@ -423,13 +463,14 @@ void draw_hud(SDL_Renderer* renderer, TTF_Font* score_font, TTF_Font* button_fon
     SDL_FreeSurface(high_value_surf);
     SDL_DestroyTexture(high_value_tex);
 
-    int chip_width = 130;
+    int chip_width = 108;
     int chip_height = 24;
-    int chip_y = HEADER_HEIGHT - chip_height - 12;
+    int chip_spacing = 8;
+    int chip_y = 36;
     int chip_x = 28;
 
-    char mode_text[24];
     const char* mode_name = mode == MODE_CHALLENGE ? "CHALLENGE" : mode == MODE_TIME_ATTACK ? "TIME ATTACK" : "CLASSIC";
+    char mode_text[24];
     snprintf(mode_text, sizeof(mode_text), "%s", mode_name);
     SDL_Rect mode_chip = {chip_x, chip_y, chip_width, chip_height};
     SDL_SetRenderDrawColor(renderer, 22, 32, 44, 255);
@@ -438,14 +479,14 @@ void draw_hud(SDL_Renderer* renderer, TTF_Font* score_font, TTF_Font* button_fon
     SDL_RenderDrawRect(renderer, &mode_chip);
     SDL_Surface* mode_surf = TTF_RenderText_Blended(button_font, mode_text, white);
     SDL_Texture* mode_tex = SDL_CreateTextureFromSurface(renderer, mode_surf);
-    SDL_Rect mode_rect = {mode_chip.x + 10, mode_chip.y + 4, mode_surf->w, mode_surf->h};
+    SDL_Rect mode_rect = {mode_chip.x + 8, mode_chip.y + 4, mode_surf->w, mode_surf->h};
     SDL_RenderCopy(renderer, mode_tex, NULL, &mode_rect);
     SDL_FreeSurface(mode_surf);
     SDL_DestroyTexture(mode_tex);
 
-    chip_x += chip_width + 12;
+    chip_x += chip_width + chip_spacing;
     char speed_text[24];
-    snprintf(speed_text, sizeof(speed_text), "SPEED %d", current_speed);
+    snprintf(speed_text, sizeof(speed_text), "SPD %d", current_speed);
     SDL_Rect speed_chip = {chip_x, chip_y, chip_width, chip_height};
     SDL_SetRenderDrawColor(renderer, 22, 32, 44, 255);
     SDL_RenderFillRect(renderer, &speed_chip);
@@ -453,14 +494,14 @@ void draw_hud(SDL_Renderer* renderer, TTF_Font* score_font, TTF_Font* button_fon
     SDL_RenderDrawRect(renderer, &speed_chip);
     SDL_Surface* speed_surf = TTF_RenderText_Blended(button_font, speed_text, white);
     SDL_Texture* speed_tex = SDL_CreateTextureFromSurface(renderer, speed_surf);
-    SDL_Rect speed_rect = {speed_chip.x + 10, speed_chip.y + 4, speed_surf->w, speed_surf->h};
+    SDL_Rect speed_rect = {speed_chip.x + 8, speed_chip.y + 4, speed_surf->w, speed_surf->h};
     SDL_RenderCopy(renderer, speed_tex, NULL, &speed_rect);
     SDL_FreeSurface(speed_surf);
     SDL_DestroyTexture(speed_tex);
 
-    chip_x += chip_width + 12;
+    chip_x += chip_width + chip_spacing;
     char apples_text[24];
-    snprintf(apples_text, sizeof(apples_text), "APPLES %d", apples_collected);
+    snprintf(apples_text, sizeof(apples_text), "APP %d", apples_collected);
     SDL_Rect apples_chip = {chip_x, chip_y, chip_width, chip_height};
     SDL_SetRenderDrawColor(renderer, 22, 32, 44, 255);
     SDL_RenderFillRect(renderer, &apples_chip);
@@ -468,12 +509,12 @@ void draw_hud(SDL_Renderer* renderer, TTF_Font* score_font, TTF_Font* button_fon
     SDL_RenderDrawRect(renderer, &apples_chip);
     SDL_Surface* apples_surf = TTF_RenderText_Blended(button_font, apples_text, white);
     SDL_Texture* apples_tex = SDL_CreateTextureFromSurface(renderer, apples_surf);
-    SDL_Rect apples_rect = {apples_chip.x + 10, apples_chip.y + 4, apples_surf->w, apples_surf->h};
+    SDL_Rect apples_rect = {apples_chip.x + 8, apples_chip.y + 4, apples_surf->w, apples_surf->h};
     SDL_RenderCopy(renderer, apples_tex, NULL, &apples_rect);
     SDL_FreeSurface(apples_surf);
     SDL_DestroyTexture(apples_tex);
 
-    chip_x += chip_width + 12;
+    chip_x += chip_width + chip_spacing;
     char len_text[24];
     snprintf(len_text, sizeof(len_text), "LEN %d", snake_length);
     SDL_Rect len_chip = {chip_x, chip_y, chip_width, chip_height};
@@ -483,7 +524,7 @@ void draw_hud(SDL_Renderer* renderer, TTF_Font* score_font, TTF_Font* button_fon
     SDL_RenderDrawRect(renderer, &len_chip);
     SDL_Surface* len_surf = TTF_RenderText_Blended(button_font, len_text, white);
     SDL_Texture* len_tex = SDL_CreateTextureFromSurface(renderer, len_surf);
-    SDL_Rect len_rect = {len_chip.x + 10, len_chip.y + 4, len_surf->w, len_surf->h};
+    SDL_Rect len_rect = {len_chip.x + 8, len_chip.y + 4, len_surf->w, len_surf->h};
     SDL_RenderCopy(renderer, len_tex, NULL, &len_rect);
     SDL_FreeSurface(len_surf);
     SDL_DestroyTexture(len_tex);
@@ -535,11 +576,19 @@ void draw_hud(SDL_Renderer* renderer, TTF_Font* score_font, TTF_Font* button_fon
     }
 
     if (active_powerup_count > 0) {
-        int timer_x = DIS_WIDTH - 268;
-        int timer_y = GAME_AREA_TOP + 12;
         if (active_powerup_count > MAX_POWERUPS) active_powerup_count = MAX_POWERUPS;
+        int chip_width = 160;
+        int chip_height = 22;
+        int chip_spacing = 8;
+        int base_x = DIS_WIDTH - 28 - chip_width;
+        int base_y = 16;
 
         for (int i = 0; i < active_powerup_count; i++) {
+            int row = i / 3;
+            int col = i % 3;
+            int power_x = base_x - col * (chip_width + chip_spacing);
+            int power_y = base_y + row * (chip_height + 6);
+
             PowerupType type = active_powerups[i].type;
             PowerupInfo info = get_powerup_info(type);
             if (!info.duration || info.duration <= 0.0) {
@@ -551,23 +600,22 @@ void draw_hud(SDL_Renderer* renderer, TTF_Font* score_font, TTF_Font* button_fon
             if (powerup_time_left < 0.0) powerup_time_left = 0.0;
             char power_text[64];
             snprintf(power_text, sizeof(power_text), "%s %.1fs", name, powerup_time_left);
-            SDL_Rect power_chip = {timer_x, timer_y, 240, 28};
+            SDL_Rect power_chip = {power_x, power_y, chip_width, chip_height};
             SDL_SetRenderDrawColor(renderer, 24, 34, 48, 255);
             SDL_RenderFillRect(renderer, &power_chip);
             SDL_SetRenderDrawColor(renderer, 80, 150, 220, 255);
             SDL_RenderDrawRect(renderer, &power_chip);
             SDL_Surface* power_surf = TTF_RenderText_Blended(button_font, power_text, accent);
             SDL_Texture* power_tex = SDL_CreateTextureFromSurface(renderer, power_surf);
-            SDL_Rect power_rect = {power_chip.x + 12, power_chip.y + 4, power_surf->w, power_surf->h};
+            SDL_Rect power_rect = {power_chip.x + 10, power_chip.y + 3, power_surf->w, power_surf->h};
             SDL_RenderCopy(renderer, power_tex, NULL, &power_rect);
             SDL_FreeSurface(power_surf);
             SDL_DestroyTexture(power_tex);
-            timer_y += 34;
         }
     }
 }
 
-void draw_main_menu(SDL_Renderer* renderer, TTF_Font* large_font, TTF_Font* button_font) {
+void draw_main_menu(SDL_Renderer* renderer, TTF_Font* large_font, TTF_Font* button_font, SnakeSkin current_skin) {
     SDL_SetRenderDrawColor(renderer, 9, 12, 18, 255);
     SDL_RenderClear(renderer);
 
@@ -600,27 +648,41 @@ void draw_main_menu(SDL_Renderer* renderer, TTF_Font* large_font, TTF_Font* butt
 
     int preview_x = hero.x + 58;
     int preview_y = hero.y + 170;
-    SDL_Rect preview = {preview_x - 24, preview_y - 34, 300, 210};
+    SDL_Rect preview = {preview_x - 20, preview_y - 20, 300, 200};
     fill_rect(renderer, preview, (Color){17, 25, 34});
     stroke_rect(renderer, preview, (Color){49, 73, 87});
     SDL_SetRenderDrawColor(renderer, 28, 40, 52, 255);
-    for (int x = preview.x; x <= preview.x + preview.w; x += 20) {
+    for (int x = preview.x; x <= preview.x + preview.w; x += SNAKE_BLOCK) {
         SDL_RenderDrawLine(renderer, x, preview.y, x, preview.y + preview.h);
     }
-    for (int y = preview.y; y <= preview.y + preview.h; y += 20) {
+    for (int y = preview.y; y <= preview.y + preview.h; y += SNAKE_BLOCK) {
         SDL_RenderDrawLine(renderer, preview.x, y, preview.x + preview.w, y);
     }
 
-    Color snake_head = {124, 218, 184};
-    Color snake_body = {70, 156, 124};
-    for (int i = 0; i < 8; i++) {
-        int px = preview_x + i * SNAKE_BLOCK;
-        int py = preview_y + (i > 4 ? SNAKE_BLOCK : 0);
-        draw_cube(renderer, px, py, SNAKE_BLOCK, i == 7 ? snake_head : snake_body, i == 7);
+    if (!preview_menu_items_initialized) {
+        init_main_menu_preview_items();
     }
-    SDL_Rect food = {preview_x + 220, preview_y + 80, SNAKE_BLOCK - 2, SNAKE_BLOCK - 2};
-    fill_rect(renderer, food, (Color){255, 92, 98});
-    stroke_rect(renderer, food, (Color){255, 184, 138});
+
+    Snake preview_snake;
+    preview_snake.length = 8;
+    preview_snake.dx = 0;
+    preview_snake.dy = 0;
+    preview_snake.skin = current_skin;
+    for (int i = 0; i < 8; i++) {
+        preview_snake.segments[i].x = preview_x + preview_snake_col[i] * SNAKE_BLOCK;
+        preview_snake.segments[i].y = preview_y + preview_snake_row[i] * SNAKE_BLOCK;
+    }
+
+    draw_snake(renderer, &preview_snake, 0, 0);
+
+    Powerup powerup_preview = {{preview_x + preview_powerup_col * SNAKE_BLOCK, preview_y + preview_powerup_row * SNAKE_BLOCK}, POWERUP_SPEED_BOOST, 1, 0.0};
+    draw_powerup(renderer, &powerup_preview);
+
+    Food bomb_preview = {{preview_x + preview_bomb_col * SNAKE_BLOCK, preview_y + preview_bomb_row * SNAKE_BLOCK}, ITEM_BOMB, 1, 0.0, 0.0};
+    draw_bomb(renderer, &bomb_preview);
+
+    Food apple_preview = {{preview_x + preview_apple_col * SNAKE_BLOCK, preview_y + preview_apple_row * SNAKE_BLOCK}, ITEM_APPLE, 1, 0.0, 0.0};
+    draw_apple(renderer, &apple_preview);
 
     SDL_Rect badge1 = {hero.x + 36, hero.y + 430, 105, 46};
     SDL_Rect badge2 = {hero.x + 156, hero.y + 430, 105, 46};

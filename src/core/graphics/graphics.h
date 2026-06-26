@@ -15,7 +15,7 @@ void draw_hud(SDL_Renderer* renderer, TTF_Font* score_font, TTF_Font* button_fon
               int score, int high_score, int snake_length, int apples_collected, 
               int current_speed, const ActivePowerup active_powerups[], int active_powerup_count,
               GameMode mode, double time_left, const char* last_powerup_text, double last_powerup_display_time, double current_time);
-void draw_main_menu(SDL_Renderer* renderer, TTF_Font* large_font, TTF_Font* button_font);
+void draw_main_menu(SDL_Renderer* renderer, TTF_Font* large_font, TTF_Font* button_font, SnakeSkin current_skin);
 void draw_settings_menu(SDL_Renderer* renderer, TTF_Font* large_font, TTF_Font* score_font, 
                         TTF_Font* button_font, GameState* state, int current_option);
 void draw_stats_menu(SDL_Renderer* renderer, TTF_Font* large_font, TTF_Font* score_font,
