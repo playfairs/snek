@@ -8,6 +8,11 @@ void init_audio(AudioState* audio, double volume) {
         return;
     }
     
+    audio->pickup_sound = Mix_LoadWAV("assets/sfx/pickup.wav");
+    if (audio->pickup_sound) {
+        Mix_VolumeChunk(audio->pickup_sound, (int)(volume * MIX_MAX_VOLUME));
+    }
+
     audio->powerup_sound = Mix_LoadWAV("assets/sfx/powerUp.wav");
     if (audio->powerup_sound) {
         Mix_VolumeChunk(audio->powerup_sound, (int)(volume * MIX_MAX_VOLUME));
@@ -20,6 +25,10 @@ void init_audio(AudioState* audio, double volume) {
 }
 
 void cleanup_audio(AudioState* audio) {
+    if (audio->pickup_sound) {
+        Mix_FreeChunk(audio->pickup_sound);
+        audio->pickup_sound = NULL;
+    }
     if (audio->powerup_sound) {
         Mix_FreeChunk(audio->powerup_sound);
         audio->powerup_sound = NULL;
@@ -29,6 +38,13 @@ void cleanup_audio(AudioState* audio) {
         audio->explosion_sound = NULL;
     }
     Mix_CloseAudio();
+}
+
+void play_pickup_sound(AudioState* audio, double volume) {
+    if (audio->pickup_sound) {
+        Mix_VolumeChunk(audio->pickup_sound, (int)(volume * MIX_MAX_VOLUME));
+        Mix_PlayChannel(-1, audio->pickup_sound, 0);
+    }
 }
 
 void play_powerup_sound(AudioState* audio, double volume) {
