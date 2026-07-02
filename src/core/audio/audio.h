@@ -5,10 +5,11 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 
-typedef struct {
-  Mix_Chunk *pickup_sound;
-  Mix_Chunk *powerup_sound;
-  Mix_Chunk *explosion_sound;
+typedef struct
+{
+    Mix_Chunk *pickup_sound;
+    Mix_Chunk *powerup_sound;
+    Mix_Chunk *explosion_sound;
 } AudioState;
 
 void init_audio(AudioState *audio, double volume);
