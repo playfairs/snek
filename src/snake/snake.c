@@ -1,6 +1,10 @@
 #include "snake.h"
 
-void init_snake(Snake* snake, SnakeSkin skin, int start_x, int start_y) {
+void init_snake(Snake *snake,
+                SnakeSkin skin,
+                int start_x,
+                int start_y)
+{
     snake->length = 1;
     snake->dx = 0;
     snake->dy = 0;

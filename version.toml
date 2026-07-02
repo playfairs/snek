@@ -1,0 +1,11 @@
+[minimum_requirements]
+macos = "12.0"
+meson = "1.2"
+cpp_standard = "23"
+
+[project]
+name = "snek"
+version = "1.2.2"
+description = "A simple Snake game."
+authors = ["playfairs"]
+license = "GPL-3.0-or-later"

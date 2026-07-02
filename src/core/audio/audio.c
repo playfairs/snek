@@ -1,62 +1,87 @@
-#include <stdio.h>
+#include "core/audio/audio.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
-#include "core/audio/audio.h"
+#include <stdio.h>
 
-void init_audio(AudioState* audio, double volume) {
-    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+void init_audio(AudioState *audio, double volume)
+{
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048)
+        < 0)
+    {
         return;
     }
-    
-    audio->pickup_sound = Mix_LoadWAV("assets/sfx/pickup.wav");
-    if (audio->pickup_sound) {
-        Mix_VolumeChunk(audio->pickup_sound, (int)(volume * MIX_MAX_VOLUME));
+
+    audio->pickup_sound =
+        Mix_LoadWAV("assets/sfx/pickup.wav");
+    if (audio->pickup_sound)
+    {
+        Mix_VolumeChunk(audio->pickup_sound,
+                        (int)(volume * MIX_MAX_VOLUME));
     }
 
-    audio->powerup_sound = Mix_LoadWAV("assets/sfx/powerUp.wav");
-    if (audio->powerup_sound) {
-        Mix_VolumeChunk(audio->powerup_sound, (int)(volume * MIX_MAX_VOLUME));
+    audio->powerup_sound =
+        Mix_LoadWAV("assets/sfx/powerUp.wav");
+    if (audio->powerup_sound)
+    {
+        Mix_VolumeChunk(audio->powerup_sound,
+                        (int)(volume * MIX_MAX_VOLUME));
     }
 
-    audio->explosion_sound = Mix_LoadWAV("assets/sfx/explosion.wav");
-    if (audio->explosion_sound) {
-        Mix_VolumeChunk(audio->explosion_sound, (int)(volume * MIX_MAX_VOLUME));
+    audio->explosion_sound =
+        Mix_LoadWAV("assets/sfx/explosion.wav");
+    if (audio->explosion_sound)
+    {
+        Mix_VolumeChunk(audio->explosion_sound,
+                        (int)(volume * MIX_MAX_VOLUME));
     }
 }
 
-void cleanup_audio(AudioState* audio) {
-    if (audio->pickup_sound) {
+void cleanup_audio(AudioState *audio)
+{
+    if (audio->pickup_sound)
+    {
         Mix_FreeChunk(audio->pickup_sound);
         audio->pickup_sound = NULL;
     }
-    if (audio->powerup_sound) {
+    if (audio->powerup_sound)
+    {
         Mix_FreeChunk(audio->powerup_sound);
         audio->powerup_sound = NULL;
     }
-    if (audio->explosion_sound) {
+    if (audio->explosion_sound)
+    {
         Mix_FreeChunk(audio->explosion_sound);
         audio->explosion_sound = NULL;
     }
     Mix_CloseAudio();
 }
 
-void play_pickup_sound(AudioState* audio, double volume) {
-    if (audio->pickup_sound) {
-        Mix_VolumeChunk(audio->pickup_sound, (int)(volume * MIX_MAX_VOLUME));
+void play_pickup_sound(AudioState *audio, double volume)
+{
+    if (audio->pickup_sound)
+    {
+        Mix_VolumeChunk(audio->pickup_sound,
+                        (int)(volume * MIX_MAX_VOLUME));
         Mix_PlayChannel(-1, audio->pickup_sound, 0);
     }
 }
 
-void play_powerup_sound(AudioState* audio, double volume) {
-    if (audio->powerup_sound) {
-        Mix_VolumeChunk(audio->powerup_sound, (int)(volume * MIX_MAX_VOLUME));
+void play_powerup_sound(AudioState *audio, double volume)
+{
+    if (audio->powerup_sound)
+    {
+        Mix_VolumeChunk(audio->powerup_sound,
+                        (int)(volume * MIX_MAX_VOLUME));
         Mix_PlayChannel(-1, audio->powerup_sound, 0);
     }
 }
 
-void play_explosion_sound(AudioState* audio, double volume) {
-    if (audio->explosion_sound) {
-        Mix_VolumeChunk(audio->explosion_sound, (int)(volume * MIX_MAX_VOLUME));
+void play_explosion_sound(AudioState *audio, double volume)
+{
+    if (audio->explosion_sound)
+    {
+        Mix_VolumeChunk(audio->explosion_sound,
+                        (int)(volume * MIX_MAX_VOLUME));
         Mix_PlayChannel(-1, audio->explosion_sound, 0);
     }
 }

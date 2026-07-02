@@ -3,6 +3,6 @@
 
 #include "../registry.h"
 
-void draw_apple(SDL_Renderer* renderer, Food* food);
+void draw_apple(SDL_Renderer *renderer, Food *food);
 
 #endif

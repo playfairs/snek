@@ -6,7 +6,8 @@
 #define HEADER_HEIGHT 70
 #define GAME_AREA_TOP HEADER_HEIGHT
 #define SNAKE_BLOCK 20
-#define GAME_AREA_ROWS ((DIS_HEIGHT - GAME_AREA_TOP) / SNAKE_BLOCK)
+#define GAME_AREA_ROWS                                     \
+    ((DIS_HEIGHT - GAME_AREA_TOP) / SNAKE_BLOCK)
 #define GAME_AREA_HEIGHT (GAME_AREA_ROWS * SNAKE_BLOCK)
 #define GAME_AREA_BOTTOM (GAME_AREA_TOP + GAME_AREA_HEIGHT)
 #define SNAKE_SPEED 10
@@ -85,7 +86,8 @@
 #define MAX_SNAKE_LENGTH 1000
 #define MAX_POWERUPS 6
 
-typedef enum {
+typedef enum
+{
     POWERUP_SPEED_BOOST,
     POWERUP_SLOW_MO,
     POWERUP_DOUBLE_POINTS,
@@ -101,7 +103,8 @@ typedef enum {
     POWERUP_NONE
 } PowerupType;
 
-typedef enum {
+typedef enum
+{
     ITEM_APPLE,
     ITEM_BANANA,
     ITEM_BOMB,
@@ -115,7 +118,8 @@ typedef enum {
     ITEM_NONE
 } ItemType;
 
-typedef enum {
+typedef enum
+{
     MODE_CLASSIC,
     MODE_CHALLENGE,
     MODE_TIME_ATTACK,
@@ -129,7 +133,8 @@ typedef enum {
     MODE_COUNT
 } GameMode;
 
-typedef enum {
+typedef enum
+{
     SKIN_DEFAULT,
     SKIN_BLUE,
     SKIN_RED,
@@ -151,7 +156,8 @@ typedef enum {
     SKIN_COUNT
 } SnakeSkin;
 
-typedef enum {
+typedef enum
+{
     DIFFICULTY_EASY,
     DIFFICULTY_NORMAL,
     DIFFICULTY_HARD,

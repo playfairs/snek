@@ -1,22 +1,25 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include "core/game/state.h"
 #include "core/audio/audio.h"
+#include "core/game/state.h"
 
-typedef enum {
+typedef enum
+{
     GAME_RUNNING,
     GAME_OVER,
     GAME_QUIT,
     GAME_MENU
 } GameStatus;
 
-typedef struct {
+typedef struct
+{
     PowerupType type;
     double end_time;
 } ActivePowerup;
 
-typedef struct {
+typedef struct
+{
     Snake snake;
     Food food;
     Food secondary_food;
@@ -37,8 +40,10 @@ typedef struct {
     GameStatus status;
 } GameContext;
 
-void init_game(GameContext* game, GameState* state);
-GameStatus game_loop(GameContext* game, GameState* state, AudioState* audio);
-void cleanup_game(GameContext* game);
+void init_game(GameContext *game, GameState *state);
+GameStatus game_loop(GameContext *game,
+                     GameState *state,
+                     AudioState *audio);
+void cleanup_game(GameContext *game);
 
 #endif

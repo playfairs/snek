@@ -3,6 +3,6 @@
 
 #include "../../core/game/game.h"
 
-void pathfind_update_intelligence(GameContext* game);
+void pathfind_update_intelligence(GameContext *game);
 
 #endif
