@@ -119,12 +119,16 @@ jobs:
           if-no-files-found: error
 
       - name: Upload PKG to release
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: dist/Snek.pkg
-          asset_name: Snek.pkg
-          asset_content_type: application/octet-stream
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          UPLOAD_URL: ${{ github.event.release.upload_url }}
+        run: |
+          upload_url="${UPLOAD_URL%\{*}"
+          curl -L -X POST \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Content-Type: application/octet-stream" \
+            --data-binary @dist/Snek.pkg \
+            "$upload_url?name=Snek.pkg"
 
   build-dmg:
     name: Build macOS DMG
@@ -238,12 +242,16 @@ jobs:
           if-no-files-found: error
 
       - name: Upload DMG to release
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: dist/Snek.dmg
-          asset_name: Snek.dmg
-          asset_content_type: application/octet-stream
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          UPLOAD_URL: ${{ github.event.release.upload_url }}
+        run: |
+          upload_url="${UPLOAD_URL%\{*}"
+          curl -L -X POST \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Content-Type: application/octet-stream" \
+            --data-binary @dist/Snek.dmg \
+            "$upload_url?name=Snek.dmg"
 
   build-exe:
     name: Build Windows EXE
@@ -298,9 +306,13 @@ jobs:
           if-no-files-found: error
 
       - name: Upload Windows package to release
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: dist/Snek-windows.zip
-          asset_name: Snek-windows.zip
-          asset_content_type: application/zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          UPLOAD_URL: ${{ github.event.release.upload_url }}
+        run: |
+          upload_url="${UPLOAD_URL%\{*}"
+          curl -L -X POST \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Content-Type: application/zip" \
+            --data-binary @dist/Snek-windows.zip \
+            "$upload_url?name=Snek-windows.zip"
