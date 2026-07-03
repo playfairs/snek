@@ -11,6 +11,13 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#if defined(_WIN32) || defined(__MINGW32__)
+#include <direct.h>
+#define MKDIR(path, mode) _mkdir(path)
+#else
+#define MKDIR(path, mode) mkdir(path, mode)
+#endif
+
 void init_state(GameState *state)
 {
     state->window = NULL;
@@ -218,7 +225,7 @@ void save_stats(GameStats *stats)
         struct stat st = {0};
         if (stat(stats_dir, &st) == -1)
         {
-            mkdir(stats_dir, 0700);
+            MKDIR(stats_dir, 0700);
         }
         int n = snprintf(path,
                          sizeof(path),
@@ -388,7 +395,7 @@ void save_settings(GameSettings *settings)
         struct stat st = {0};
         if (stat(dir, &st) == -1)
         {
-            mkdir(dir, 0700);
+            MKDIR(dir, 0700);
         }
         int n = snprintf(path,
                          sizeof(path),
