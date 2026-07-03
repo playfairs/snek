@@ -86,6 +86,14 @@ jobs:
           path: dist/Snek.pkg
           if-no-files-found: error
 
+      - name: Upload PKG to release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: dist/Snek.pkg
+          asset_name: Snek.pkg
+          asset_content_type: application/octet-stream
+
   build-dmg:
     name: Build macOS DMG
     runs-on: macos-latest
@@ -165,6 +173,14 @@ jobs:
           path: dist/Snek.dmg
           if-no-files-found: error
 
+      - name: Upload DMG to release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: dist/Snek.dmg
+          asset_name: Snek.dmg
+          asset_content_type: application/octet-stream
+
   build-exe:
     name: Build Windows EXE
     runs-on: windows-latest
@@ -200,9 +216,27 @@ jobs:
           cp -R assets package/windows/assets
           ldd build/Snek.exe | awk '{ for (i = 1; i <= NF; i++) if ($i ~ /^\/mingw64\/bin\/.*\.dll$/) print $i }' | xargs -r -I{} cp "{}" package/windows/
 
-      - name: Upload EXE
+      - name: Create Windows release archive
+        run: |
+          mkdir -p dist
+          if command -v zip >/dev/null 2>&1; then
+            (cd package && zip -r ../dist/Snek-windows.zip windows)
+          else
+            pacman -S --noconfirm zip
+            (cd package && zip -r ../dist/Snek-windows.zip windows)
+          fi
+
+      - name: Upload Windows package
         uses: actions/upload-artifact@v4
         with:
-          name: Snek-windows-exe
-          path: package/windows/**
+          name: Snek-windows-zip
+          path: dist/Snek-windows.zip
           if-no-files-found: error
+
+      - name: Upload Windows package to release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: dist/Snek-windows.zip
+          asset_name: Snek-windows.zip
+          asset_content_type: application/zip
