@@ -34,7 +34,7 @@ jobs:
         run: |
           APP_VERSION="${{ steps.version.outputs.app_version }}"
           APP_ROOT="package/Snek.app"
-          mkdir -p "$APP_ROOT/Contents/MacOS" "$APP_ROOT/Contents/Resources"
+          mkdir -p "$APP_ROOT/Contents/MacOS" "$APP_ROOT/Contents/Resources" "$APP_ROOT/Contents/Frameworks"
           cp build/snek "$APP_ROOT/Contents/Resources/snek-bin"
           cp -R assets "$APP_ROOT/Contents/Resources/assets"
 
@@ -68,6 +68,38 @@ jobs:
           SH
 
           chmod +x "$APP_ROOT/Contents/MacOS/Snek" "$APP_ROOT/Contents/Resources/snek-bin"
+
+      - name: Bundle SDL dylibs into app
+        run: |
+          APP_ROOT="package/Snek.app"
+          BIN="$APP_ROOT/Contents/Resources/snek-bin"
+          FRAMEWORKS="$APP_ROOT/Contents/Frameworks"
+          mkdir -p "$FRAMEWORKS"
+
+          find_deps() {
+            otool -L "$1" | tail -n +2 | awk '{print $1}' | grep -E '^(/opt/homebrew|/usr/local)/.*\.dylib$' || true
+          }
+
+          copy_lib() {
+            libpath="$1"
+            dest="$FRAMEWORKS/$(basename "$libpath")"
+            if [ ! -f "$dest" ]; then
+              cp "$libpath" "$dest"
+              install_name_tool -id "@rpath/$(basename "$libpath")" "$dest"
+              for dep in $(find_deps "$dest"); do
+                if echo "$dep" | grep -E '^(/opt/homebrew|/usr/local)/.*\.dylib$' >/dev/null; then
+                  copy_lib "$dep"
+                  install_name_tool -change "$dep" "@rpath/$(basename "$dep")" "$dest"
+                fi
+              done
+            fi
+          }
+
+          for dep in $(find_deps "$BIN"); do
+            copy_lib "$dep"
+            install_name_tool -change "$dep" "@rpath/$(basename "$dep")" "$BIN"
+          done
+          install_name_tool -add_rpath "@executable_path/../Frameworks" "$BIN"
 
       - name: Build PKG
         run: |
@@ -119,7 +151,7 @@ jobs:
         run: |
           APP_VERSION="${{ steps.version.outputs.app_version }}"
           APP_ROOT="package/Snek.app"
-          mkdir -p "$APP_ROOT/Contents/MacOS" "$APP_ROOT/Contents/Resources"
+          mkdir -p "$APP_ROOT/Contents/MacOS" "$APP_ROOT/Contents/Resources" "$APP_ROOT/Contents/Frameworks"
           cp build/snek "$APP_ROOT/Contents/Resources/snek-bin"
           cp -R assets "$APP_ROOT/Contents/Resources/assets"
 
@@ -153,6 +185,38 @@ jobs:
           SH
 
           chmod +x "$APP_ROOT/Contents/MacOS/Snek" "$APP_ROOT/Contents/Resources/snek-bin"
+
+      - name: Bundle SDL dylibs into app
+        run: |
+          APP_ROOT="package/Snek.app"
+          BIN="$APP_ROOT/Contents/Resources/snek-bin"
+          FRAMEWORKS="$APP_ROOT/Contents/Frameworks"
+          mkdir -p "$FRAMEWORKS"
+
+          find_deps() {
+            otool -L "$1" | tail -n +2 | awk '{print $1}' | grep -E '^(/opt/homebrew|/usr/local)/.*\.dylib$' || true
+          }
+
+          copy_lib() {
+            libpath="$1"
+            dest="$FRAMEWORKS/$(basename "$libpath")"
+            if [ ! -f "$dest" ]; then
+              cp "$libpath" "$dest"
+              install_name_tool -id "@rpath/$(basename "$libpath")" "$dest"
+              for dep in $(find_deps "$dest"); do
+                if echo "$dep" | grep -E '^(/opt/homebrew|/usr/local)/.*\.dylib$' >/dev/null; then
+                  copy_lib "$dep"
+                  install_name_tool -change "$dep" "@rpath/$(basename "$dep")" "$dest"
+                fi
+              done
+            fi
+          }
+
+          for dep in $(find_deps "$BIN"); do
+            copy_lib "$dep"
+            install_name_tool -change "$dep" "@rpath/$(basename "$dep")" "$BIN"
+          done
+          install_name_tool -add_rpath "@executable_path/../Frameworks" "$BIN"
 
       - name: Build DMG
         run: |
