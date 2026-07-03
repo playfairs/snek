@@ -21,7 +21,7 @@
         formatters = import nix/formatter.nix { inherit pkgs treefmt-nix self; };
         versionToml = builtins.readFile ./version.toml;
         versionMatch = builtins.match "version[ \t]*=[ \t]*\"([^\"]+)\"" versionToml;
-        versionFromToml = if versionMatch == null then "0.0" else versionMatch[1];
+        versionFromToml = if versionMatch == null then "0.0" else versionMatch [ 1 ];
       in
       {
         devShells.default = pkgs.mkShell {
@@ -44,8 +44,15 @@
           version = versionFromToml;
           src = ./.;
 
-          nativeBuildInputs = [ pkgs.pkg-config pkgs.gcc ];
-          buildInputs = [ pkgs.SDL2 pkgs.SDL2_ttf pkgs.SDL2_mixer ];
+          nativeBuildInputs = [
+            pkgs.pkg-config
+            pkgs.gcc
+          ];
+          buildInputs = [
+            pkgs.SDL2
+            pkgs.SDL2_ttf
+            pkgs.SDL2_mixer
+          ];
 
           buildPhase = ''
             make all
@@ -58,12 +65,12 @@
 
           meta = {
             description = "A simple Snake game.";
-            maintainers = with pkgs.lib; [];
+            maintainers = [ ];
           };
         };
 
         formatter = formatters.wrapper;
-        checks.formatting = formatters.check self;
+        checks.formatting = formatters.check;
       }
     );
 }

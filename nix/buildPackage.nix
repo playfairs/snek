@@ -1,4 +1,6 @@
-{ pkgs ? import <nixpkgs> {} }:
+{
+  pkgs ? import <nixpkgs> { },
+}:
 
 let
   stdenv = pkgs.stdenv;
@@ -8,18 +10,26 @@ let
 
   versionToml = builtins.readFile ./version.toml;
   versionMatch = builtins.match "version[ \\t]*=[ \\t]*\"([^\"]+)\"" versionToml;
-  versionFromToml = if versionMatch == null then "0.0" else versionMatch[1];
+  versionFromToml = if versionMatch == null then "0.0" else versionMatch [ 1 ];
 in
 
-stdenv.mkDerivation rec {
+stdenv.mkDerivation {
   pname = "snek";
   version = versionFromToml;
 
   src = ./.;
 
-  nativeBuildInputs = [ meson ninja pkgconfig ];
+  nativeBuildInputs = [
+    meson
+    ninja
+    pkgconfig
+  ];
 
-  buildInputs = with pkgs; [ sdl2 sdl2_image sdl2_mixer ];
+  buildInputs = with pkgs; [
+    sdl2
+    sdl2_image
+    sdl2_mixer
+  ];
 
   configurePhase = ''
     meson setup --prefix=$out build
@@ -36,7 +46,11 @@ stdenv.mkDerivation rec {
   meta = with pkgs.lib; {
     description = "snek - a small snake game built with Meson";
     license = licenses.gpl3;
-    platforms = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" ];
-    maintainers = [];
+    platforms = [
+      "x86_64-linux"
+      "aarch64-linux"
+      "x86_64-darwin"
+    ];
+    maintainers = [ ];
   };
 }
