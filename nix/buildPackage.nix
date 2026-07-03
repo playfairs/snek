@@ -5,11 +5,15 @@ let
   meson = pkgs.meson;
   ninja = pkgs.ninja;
   pkgconfig = pkgs.pkg-config;
+
+  versionToml = builtins.readFile ./version.toml;
+  versionMatch = builtins.match "version[ \\t]*=[ \\t]*\"([^\"]+)\"" versionToml;
+  versionFromToml = if versionMatch == null then "0.0" else versionMatch[1];
 in
 
 stdenv.mkDerivation rec {
   pname = "snek";
-  version = "0.1.0";
+  version = versionFromToml;
 
   src = ./.;
 

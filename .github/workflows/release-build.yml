@@ -23,7 +23,7 @@ jobs:
       - name: Read version
         id: version
         run: |
-          APP_VERSION="$(tr -d '[:space:]' < VERSION)"
+          APP_VERSION="$(grep -A5 '^\[project\]' version.toml | grep '^version' | sed -E 's/.*=\s*"([^"]+)".*/\1/')"
           test -n "$APP_VERSION"
           echo "app_version=$APP_VERSION" >> "$GITHUB_OUTPUT"
 
@@ -100,7 +100,7 @@ jobs:
       - name: Read version
         id: version
         run: |
-          APP_VERSION="$(tr -d '[:space:]' < VERSION)"
+          APP_VERSION="$(grep -A5 '^\[project\]' version.toml | grep '^version' | sed -E 's/.*=\s*"([^"]+)".*/\1/')"
           test -n "$APP_VERSION"
           echo "app_version=$APP_VERSION" >> "$GITHUB_OUTPUT"
 
