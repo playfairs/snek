@@ -69,7 +69,8 @@ void gui_render_settings_menu(GuiContext *gui,
 void gui_render_stats_menu(GuiContext *gui,
                            const GameStats *stats);
 void gui_render_game_over(GuiContext *gui, int score);
-void gui_render_hud(GuiContext *gui, const GuiHudData *data);
+void gui_render_hud(GuiContext *gui,
+                    const GuiHudData *data);
 void gui_render_pause_overlay(GuiContext *gui, int paused);
 int gui_draw_button(GuiContext *gui,
                     const char *text,

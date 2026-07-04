@@ -441,7 +441,8 @@ GameStatus game_loop(GameContext *game,
         hud_data.active_powerup_count = game->powerup_count;
         for (int i = 0; i < game->powerup_count; i++)
         {
-            hud_data.active_powerups[i] = game->active_powerups[i];
+            hud_data.active_powerups[i] =
+                game->active_powerups[i];
         }
         hud_data.mode = game->mode;
         hud_data.time_left = time_left;

@@ -3,7 +3,8 @@
 
 #include "gui/gui.h"
 
-void gui_hud_render(GuiContext *gui, const GuiHudData *data);
+void gui_hud_render(GuiContext *gui,
+                    const GuiHudData *data);
 void gui_hud_render_pause_overlay(GuiContext *gui);
 
 #endif

@@ -37,7 +37,9 @@ void gui_refresh_layout(GuiContext *gui)
 
     int width = 0;
     int height = 0;
-    SDL_GetRendererOutputSize(gui->renderer, &width, &height);
+    SDL_GetRendererOutputSize(gui->renderer,
+                              &width,
+                              &height);
     gui_layout_update(&gui->layout, width, height);
 }
 

@@ -25,22 +25,26 @@ static MenuState main_menu_loop(GameState *state,
 {
     (void)audio;
     int running = 1;
-    
+
     int screen_w, screen_h;
-    SDL_GetRendererOutputSize(state->renderer, &screen_w, &screen_h);
-    
+    SDL_GetRendererOutputSize(state->renderer,
+                              &screen_w,
+                              &screen_h);
+
     int shell_x = (int)(screen_w * 0.08f);
     int shell_w = (int)(screen_w * 0.84f);
     int left_col_w = (int)(shell_w * 0.55f);
     int left_col_x = shell_x + (int)(shell_w * 0.03f);
     int right_col_x = left_col_x + left_col_w + 20;
-    int right_col_w = shell_w - left_col_w - (int)(shell_w * 0.06f) - 20;
-    
+    int right_col_w =
+        shell_w - left_col_w - (int)(shell_w * 0.06f) - 20;
+
     int shell_y = (int)(screen_h * 0.08f);
     int shell_h = (int)(screen_h * 0.84f);
     int action_y = shell_y + (int)(shell_h * 0.15f);
-    int action_h = shell_h - (int)(shell_h * 0.15f) - (int)(shell_h * 0.05f);
-    
+    int action_h = shell_h - (int)(shell_h * 0.15f)
+                   - (int)(shell_h * 0.05f);
+
     int button_width = right_col_w - 40;
     int button_height = 50;
     int button_spacing = 12;
@@ -228,22 +232,26 @@ static MenuState settings_menu_loop(GameState *state,
     int button_width = 220;
     int button_height = 50;
     int button_spacing = 18;
-    
+
     int screen_w, screen_h;
-    SDL_GetRendererOutputSize(state->renderer, &screen_w, &screen_h);
-    
+    SDL_GetRendererOutputSize(state->renderer,
+                              &screen_w,
+                              &screen_h);
+
     int frame_x = (int)(screen_w * 0.08f);
     int frame_w = (int)(screen_w * 0.84f);
     int left_col_w = (int)(frame_w * 0.50f);
     int left_col_x = frame_x + (int)(frame_w * 0.03f);
     int right_col_x = left_col_x + left_col_w + 20;
-    int right_col_w = frame_w - left_col_w - (int)(frame_w * 0.06f) - 20;
-    
+    int right_col_w =
+        frame_w - left_col_w - (int)(frame_w * 0.06f) - 20;
+
     int frame_y = (int)(screen_h * 0.08f);
     int frame_h = (int)(screen_h * 0.84f);
     int settings_y = frame_y + (int)(frame_h * 0.13f);
-    
-    int start_x = right_col_x + (right_col_w - button_width) / 2;
+
+    int start_x =
+        right_col_x + (right_col_w - button_width) / 2;
     int start_y = settings_y + 60;
 
     while (running)
@@ -267,7 +275,8 @@ static MenuState settings_menu_loop(GameState *state,
                     mouse_x = event.button.x;
                     mouse_y = event.button.y;
                 }
-                else if (event.button.button == SDL_BUTTON_RIGHT)
+                else if (event.button.button
+                         == SDL_BUTTON_RIGHT)
                 {
                     mouse_right_clicked = 1;
                     mouse_x = event.button.x;
@@ -285,7 +294,9 @@ static MenuState settings_menu_loop(GameState *state,
 
         SDL_GetMouseState(&mouse_x, &mouse_y);
 
-        gui_render_settings_menu(gui, &state->settings, &state->stats);
+        gui_render_settings_menu(gui,
+                                 &state->settings,
+                                 &state->stats);
 
         char skin_text[64];
         snprintf(skin_text,
@@ -309,10 +320,13 @@ static MenuState settings_menu_loop(GameState *state,
         }
         else if (mouse_right_clicked)
         {
-            if (mouse_x >= start_x && mouse_x <= start_x + button_width &&
-                mouse_y >= start_y && mouse_y <= start_y + button_height)
+            if (mouse_x >= start_x
+                && mouse_x <= start_x + button_width
+                && mouse_y >= start_y
+                && mouse_y <= start_y + button_height)
             {
-                skin_index = (skin_index - 1 + SKIN_COUNT) % SKIN_COUNT;
+                skin_index = (skin_index - 1 + SKIN_COUNT)
+                             % SKIN_COUNT;
                 state->settings.current_skin = skin_index;
                 save_settings(&state->settings);
                 mouse_right_clicked = 0;
@@ -348,9 +362,12 @@ static MenuState settings_menu_loop(GameState *state,
         }
         else if (mouse_right_clicked)
         {
-            int sound_y = start_y + (button_height + button_spacing);
-            if (mouse_x >= start_x && mouse_x <= start_x + button_width &&
-                mouse_y >= sound_y && mouse_y <= sound_y + button_height)
+            int sound_y =
+                start_y + (button_height + button_spacing);
+            if (mouse_x >= start_x
+                && mouse_x <= start_x + button_width
+                && mouse_y >= sound_y
+                && mouse_y <= sound_y + button_height)
             {
                 sound_index = (sound_index - 1 + 2) % 2;
                 state->settings.sound_enabled =
@@ -358,8 +375,9 @@ static MenuState settings_menu_loop(GameState *state,
                 save_settings(&state->settings);
                 if (state->settings.sound_enabled && audio)
                 {
-                    play_pickup_sound(audio,
-                                      state->settings.volume);
+                    play_pickup_sound(
+                        audio,
+                        state->settings.volume);
                 }
                 mouse_right_clicked = 0;
             }
@@ -389,9 +407,13 @@ static MenuState settings_menu_loop(GameState *state,
         }
         else if (mouse_right_clicked)
         {
-            int music_y = start_y + (button_height + button_spacing) * 2;
-            if (mouse_x >= start_x && mouse_x <= start_x + button_width &&
-                mouse_y >= music_y && mouse_y <= music_y + button_height)
+            int music_y =
+                start_y
+                + (button_height + button_spacing) * 2;
+            if (mouse_x >= start_x
+                && mouse_x <= start_x + button_width
+                && mouse_y >= music_y
+                && mouse_y <= music_y + button_height)
             {
                 music_index = (music_index - 1 + 2) % 2;
                 state->settings.music_enabled =
@@ -425,9 +447,13 @@ static MenuState settings_menu_loop(GameState *state,
         }
         else if (mouse_right_clicked)
         {
-            int volume_y = start_y + (button_height + button_spacing) * 3;
-            if (mouse_x >= start_x && mouse_x <= start_x + button_width &&
-                mouse_y >= volume_y && mouse_y <= volume_y + button_height)
+            int volume_y =
+                start_y
+                + (button_height + button_spacing) * 3;
+            if (mouse_x >= start_x
+                && mouse_x <= start_x + button_width
+                && mouse_y >= volume_y
+                && mouse_y <= volume_y + button_height)
             {
                 volume_index = (volume_index - 1 + 4) % 4;
                 state->settings.volume =
@@ -460,11 +486,16 @@ static MenuState settings_menu_loop(GameState *state,
         }
         else if (mouse_right_clicked)
         {
-            int mode_y = start_y + (button_height + button_spacing) * 4;
-            if (mouse_x >= start_x && mouse_x <= start_x + button_width &&
-                mouse_y >= mode_y && mouse_y <= mode_y + button_height)
+            int mode_y =
+                start_y
+                + (button_height + button_spacing) * 4;
+            if (mouse_x >= start_x
+                && mouse_x <= start_x + button_width
+                && mouse_y >= mode_y
+                && mouse_y <= mode_y + button_height)
             {
-                mode_index = (mode_index - 1 + MODE_COUNT) % MODE_COUNT;
+                mode_index = (mode_index - 1 + MODE_COUNT)
+                             % MODE_COUNT;
                 state->settings.mode = mode_index;
                 save_settings(&state->settings);
                 mouse_right_clicked = 0;
@@ -495,12 +526,19 @@ static MenuState settings_menu_loop(GameState *state,
         }
         else if (mouse_right_clicked)
         {
-            int difficulty_y = start_y + (button_height + button_spacing) * 5;
-            if (mouse_x >= start_x && mouse_x <= start_x + button_width &&
-                mouse_y >= difficulty_y && mouse_y <= difficulty_y + button_height)
+            int difficulty_y =
+                start_y
+                + (button_height + button_spacing) * 5;
+            if (mouse_x >= start_x
+                && mouse_x <= start_x + button_width
+                && mouse_y >= difficulty_y
+                && mouse_y <= difficulty_y + button_height)
             {
-                difficulty_index = (difficulty_index - 1 + DIFFICULTY_COUNT) % DIFFICULTY_COUNT;
-                state->settings.difficulty = difficulty_index;
+                difficulty_index = (difficulty_index - 1
+                                    + DIFFICULTY_COUNT)
+                                   % DIFFICULTY_COUNT;
+                state->settings.difficulty =
+                    difficulty_index;
                 save_settings(&state->settings);
                 mouse_right_clicked = 0;
             }
@@ -529,7 +567,7 @@ static MenuState settings_menu_loop(GameState *state,
 }
 
 static MenuState stats_menu_loop(GameState *state,
-                                  GuiContext *gui)
+                                 GuiContext *gui)
 {
     int running = 1;
     int button_width = 220;
@@ -593,9 +631,8 @@ static MenuState stats_menu_loop(GameState *state,
     return MENU_MAIN;
 }
 
-static MenuState game_over_loop(GameState *state,
-                                 GuiContext *gui,
-                                 int score)
+static MenuState
+game_over_loop(GameState *state, GuiContext *gui, int score)
 {
     int running = 1;
     int button_width = 220;
@@ -792,7 +829,8 @@ int main(int argc, char *argv[])
         switch (current_menu)
         {
         case MENU_MAIN:
-            current_menu = main_menu_loop(&state, &audio, &gui);
+            current_menu =
+                main_menu_loop(&state, &audio, &gui);
             if (current_menu == MENU_MAIN)
             {
                 running = 0;
@@ -810,7 +848,7 @@ int main(int argc, char *argv[])
             GameContext game;
             init_game(&game, &state);
             GameStatus status =
-                    game_loop(&game, &state, &audio, &gui);
+                game_loop(&game, &state, &audio, &gui);
             double end_time = SDL_GetTicks() / 1000.0;
             double elapsed = end_time - game.start_time;
             if (elapsed > 0.0
@@ -828,8 +866,9 @@ int main(int argc, char *argv[])
             }
             else
             {
-                current_menu =
-                    game_over_loop(&state, &gui, game.score);
+                current_menu = game_over_loop(&state,
+                                              &gui,
+                                              game.score);
             }
             break;
         }
