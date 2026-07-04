@@ -40,6 +40,10 @@ SOURCES = $(SRC_DIR)/main.c \
           $(SRC_DIR)/core/graphics/graphics.c \
           $(SRC_DIR)/core/input/input.c \
           $(SRC_DIR)/core/audio/audio.c \
+          $(SRC_DIR)/gui/gui.c \
+          $(SRC_DIR)/gui/layout.c \
+          $(SRC_DIR)/gui/hud.c \
+          $(SRC_DIR)/gui/menu.c \
           $(SRC_DIR)/items/apple/apple.c \
           $(SRC_DIR)/items/banana/banana.c \
           $(SRC_DIR)/items/bomb/bomb.c \

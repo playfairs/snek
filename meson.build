@@ -1,9 +1,6 @@
-version = run_command('python3', '-c', 'import tomllib, pathlib; data = tomllib.loads(pathlib.Path("version.toml").read_text()); print(data["project"]["version"])').stdout().strip()
-meson_required = run_command('python3', '-c', 'import tomllib, pathlib; data = tomllib.loads(pathlib.Path("version.toml").read_text()); print(data["minimum_requirements"]["meson"])').stdout().strip()
-
 project('snek', 'c',
-  version: version,
-  meson_version: '>=' + meson_required,
+  version: run_command('python3', '-c', 'import tomllib, pathlib; data = tomllib.loads(pathlib.Path("version.toml").read_text()); print(data["project"]["version"])').stdout().strip(),
+  meson_version: '>=' + run_command('python3', '-c', 'import tomllib, pathlib; data = tomllib.loads(pathlib.Path("version.toml").read_text()); print(data["minimum_requirements"]["meson"])').stdout().strip(),
   default_options : ['c_std=c99', 'warning_level=2']
 )
 
@@ -20,6 +17,10 @@ sources = files(
   'src/core/game/state.c',
   'src/core/graphics/graphics.c',
   'src/core/input/input.c',
+  'src/gui/gui.c',
+  'src/gui/hud.c',
+  'src/gui/layout.c',
+  'src/gui/menu.c',
   'src/items/apple/apple.c',
   'src/items/banana/banana.c',
   'src/items/bomb/bomb.c',
