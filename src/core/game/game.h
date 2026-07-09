@@ -18,6 +18,8 @@ typedef struct
     double end_time;
 } ActivePowerup;
 
+typedef struct GuiContext GuiContext;
+
 typedef struct
 {
     Snake snake;
@@ -43,7 +45,8 @@ typedef struct
 void init_game(GameContext *game, GameState *state);
 GameStatus game_loop(GameContext *game,
                      GameState *state,
-                     AudioState *audio);
+                     AudioState *audio,
+                     GuiContext *gui);
 void cleanup_game(GameContext *game);
 
 #endif

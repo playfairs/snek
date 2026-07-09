@@ -4,6 +4,7 @@
 #include "core/game/state.h"
 #include "core/graphics/graphics.h"
 #include "core/input/input.h"
+#include "gui/gui.h"
 #include "items/registry.h"
 #include "powerups/registry.h"
 #include "snake/snake.h"
@@ -154,7 +155,8 @@ void init_game(GameContext *game, GameState *state)
 
 GameStatus game_loop(GameContext *game,
                      GameState *state,
-                     AudioState *audio)
+                     AudioState *audio,
+                     GuiContext *gui)
 {
     SDL_Event event;
     int running = 1;
@@ -430,61 +432,30 @@ GameStatus game_loop(GameContext *game,
             }
         }
 
-        draw_hud(state->renderer,
-                 state->score_font,
-                 state->button_font,
-                 game->score,
-                 state->stats.high_score,
-                 game->snake.length,
-                 game->apples_eaten,
-                 game->current_speed,
-                 game->active_powerups,
-                 game->powerup_count,
-                 game->mode,
-                 time_left,
-                 game->last_powerup_text,
-                 game->last_powerup_display_time,
-                 current_time);
-
-        if (paused)
+        GuiHudData hud_data;
+        hud_data.score = game->score;
+        hud_data.high_score = state->stats.high_score;
+        hud_data.snake_length = game->snake.length;
+        hud_data.apples_collected = game->apples_eaten;
+        hud_data.current_speed = game->current_speed;
+        hud_data.active_powerup_count = game->powerup_count;
+        for (int i = 0; i < game->powerup_count; i++)
         {
-            SDL_SetRenderDrawBlendMode(state->renderer,
-                                       SDL_BLENDMODE_BLEND);
-            SDL_SetRenderDrawColor(state->renderer,
-                                   0,
-                                   0,
-                                   0,
-                                   150);
-            SDL_Rect overlay = {0,
-                                GAME_AREA_TOP,
-                                DIS_WIDTH,
-                                GAME_AREA_HEIGHT};
-            SDL_RenderFillRect(state->renderer, &overlay);
-
-            SDL_Color white = {WHITE_R,
-                               WHITE_G,
-                               WHITE_B,
-                               255};
-            SDL_Surface *paused_surf =
-                TTF_RenderText_Blended(state->large_font,
-                                       "PAUSED",
-                                       white);
-            SDL_Texture *paused_tex =
-                SDL_CreateTextureFromSurface(
-                    state->renderer,
-                    paused_surf);
-            SDL_Rect paused_rect = {
-                (DIS_WIDTH - paused_surf->w) / 2,
-                GAME_AREA_TOP + GAME_AREA_HEIGHT / 2 - 40,
-                paused_surf->w,
-                paused_surf->h};
-            SDL_RenderCopy(state->renderer,
-                           paused_tex,
-                           NULL,
-                           &paused_rect);
-            SDL_FreeSurface(paused_surf);
-            SDL_DestroyTexture(paused_tex);
+            hud_data.active_powerups[i] =
+                game->active_powerups[i];
         }
+        hud_data.mode = game->mode;
+        hud_data.time_left = time_left;
+        snprintf(hud_data.last_powerup_text,
+                 sizeof(hud_data.last_powerup_text),
+                 "%s",
+                 game->last_powerup_text);
+        hud_data.last_powerup_display_time =
+            game->last_powerup_display_time;
+        hud_data.current_time = current_time;
+        hud_data.paused = paused;
+        gui_render_hud(gui, &hud_data);
+        gui_render_pause_overlay(gui, paused);
 
         SDL_RenderPresent(state->renderer);
 
