@@ -27,16 +27,12 @@
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
             gcc
-            SDL2
-            SDL2_ttf
-            SDL2_mixer
+            clang
+            cmake
+            meson
+            ninja
             pkg-config
           ];
-
-          shellHook = ''
-            export PKG_CONFIG_PATH="${pkgs.SDL2}/lib/pkgconfig:${pkgs.SDL2_ttf}/lib/pkgconfig:${pkgs.SDL2_mixer}/lib/pkgconfig:$PKG_CONFIG_PATH"
-            export LD_LIBRARY_PATH="${pkgs.SDL2}/lib:${pkgs.SDL2_ttf}/lib:${pkgs.SDL2_mixer}/lib:$LD_LIBRARY_PATH"
-          '';
         };
 
         packages.default = pkgs.stdenv.mkDerivation {
@@ -45,22 +41,20 @@
           src = ./.;
 
           nativeBuildInputs = [
+            pkgs.cmake
+            pkgs.meson
+            pkgs.ninja
             pkgs.pkg-config
             pkgs.gcc
           ];
-          buildInputs = [
-            pkgs.SDL2
-            pkgs.SDL2_ttf
-            pkgs.SDL2_mixer
-          ];
 
           buildPhase = ''
-            make all
+            meson setup builddir --prefix=$out
+            ninja -C builddir
           '';
 
           installPhase = ''
-            mkdir -p $out/bin
-            cp build/snek $out/bin/snek
+            ninja -C builddir install
           '';
 
           meta = {

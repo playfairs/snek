@@ -6,9 +6,20 @@ project('snek', 'c',
 
 inc = include_directories('src')
 
-sdl2 = dependency('sdl2')
-sdl2_ttf = dependency('sdl2_ttf')
-sdl2_mixer = dependency('sdl2_mixer')
+sdl2_dep = dependency('sdl2', required: false)
+if not sdl2_dep.found()
+  sdl2_dep = dependency('sdl2', fallback: ['SDL2', 'sdl2_dep'])
+endif
+
+sdl2_ttf_dep = dependency('sdl2_ttf', required: false)
+if not sdl2_ttf_dep.found()
+  sdl2_ttf_dep = dependency('sdl2_ttf', fallback: ['SDL2_ttf', 'sdl2_ttf_dep'])
+endif
+
+sdl2_mixer_dep = dependency('sdl2_mixer', required: false)
+if not sdl2_mixer_dep.found()
+  sdl2_mixer_dep = dependency('sdl2_mixer', fallback: ['SDL2_mixer', 'sdl2_mixer_dep'])
+endif
 
 sources = files(
   'src/main.c',
@@ -49,7 +60,7 @@ add_project_arguments('-Wall', '-Wextra', language: 'c')
 
 executable('snek', sources,
   include_directories: inc,
-  dependencies: [sdl2, sdl2_ttf, sdl2_mixer],
+  dependencies: [sdl2_dep, sdl2_ttf_dep, sdl2_mixer_dep],
   install: true,
   install_dir: get_option('bindir'),
 )

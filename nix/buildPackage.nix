@@ -19,16 +19,12 @@ stdenv.mkDerivation {
 
   src = ./.;
 
-  nativeBuildInputs = [
+  nativeBuildInputs = with pkgs; [
     meson
     ninja
     pkgconfig
-  ];
-
-  buildInputs = with pkgs; [
-    sdl2
-    sdl2_image
-    sdl2_mixer
+    cmake
+    gcc
   ];
 
   configurePhase = ''
