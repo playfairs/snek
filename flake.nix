@@ -44,18 +44,16 @@
           src = ./.;
 
           buildInputs = with pkgs; [
-            gcc
-            python3
-            ninja
-            clang
+            SDL2
+            SDL2_ttf
+            SDL2_mixer
           ];
 
           nativeBuildInputs = with pkgs; [
             meson
+            ninja
+            python3
             pkg-config
-            SDL2
-            SDL2_ttf
-            SDL2_mixer
           ];
 
           meta = {
