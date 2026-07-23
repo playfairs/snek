@@ -43,25 +43,16 @@
           version = versionFromToml;
           src = ./.;
 
-          nativeBuildInputs = [
-            pkgs.cmake
-            pkgs.meson
-            pkgs.ninja
-            pkgs.pkg-config
-            pkgs.gcc
-            pkgs.sdl2
-            pkgs.sdl2_ttf
-            pkgs.sdl2_mixer
+          nativeBuildInputs = with pkgs; [
+            meson
+            python3
+            ninja
+            pkg-config
+            gcc
+            SDL2
+            SDL2_ttf
+            SDL2_mixer
           ];
-
-          buildPhase = ''
-            meson setup builddir --prefix=$out
-            ninja -C builddir
-          '';
-
-          installPhase = ''
-            ninja -C builddir install
-          '';
 
           meta = {
             description = "A simple Snake game.";

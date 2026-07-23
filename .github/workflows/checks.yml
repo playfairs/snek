@@ -1,18 +1,14 @@
 name: Checks and Build
-
 on:
   push:
   pull_request:
-
 jobs:
   check:
     name: Run checks
     runs-on: ubuntu-latest
-
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-
       - name: Run check action
         uses: ./.github/actions/check
 
@@ -20,41 +16,24 @@ jobs:
     name: Build Linux package
     needs: check
     runs-on: ubuntu-latest
-
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Install build dependencies
-        run: |
-          sudo apt-get install -y gcc meson ninja-build pkg-config libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
 
-      - name: Build app
-        run: |
-          make clean all
+      - name: Set up Nix cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
 
-      - name: Bundle SDL2 runtime
-        run: |
-          mkdir -p package/linux/bin package/linux/lib
-          cp builddir/snek package/linux/bin/
-          cp -r assets package/linux/
-          for lib in $(ldd builddir/snek | awk '/libSDL2|libSDL2_ttf|libSDL2_mixer/ {print $3}' | sort -u); do
-            if [ -n "$lib" ] && [ -f "$lib" ]; then
-              cp "$lib" package/linux/lib/
-            fi
-          done
-          cat > package/linux/run-snek.sh <<'EOF'
-          #!/usr/bin/env bash
-          DIR="$(cd "$(dirname "$0")" && pwd)"
-          export LD_LIBRARY_PATH="$DIR/lib:$LD_LIBRARY_PATH"
-          exec "$DIR/bin/snek" "$@"
-          EOF
-          chmod +x package/linux/run-snek.sh
+      - name: Build package
+        run: nix build -L
 
-      - name: Package Linux artifact
+      - name: Bundle Linux artifact
         run: |
-          mkdir -p dist
-          tar -czf dist/snek-linux.tar.gz -C package linux
+          mkdir -p dist/package
+          cp -L result/bin/* dist/package/
+          tar -czf dist/snek-linux.tar.gz -C dist/package .
 
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
