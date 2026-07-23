@@ -20,6 +20,9 @@ jobs:
     name: Run checks
     runs-on: ubuntu-latest
     steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
       - name: Run check action
         uses: ./.github/actions/check
 
