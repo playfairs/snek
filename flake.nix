@@ -43,12 +43,16 @@
           version = versionFromToml;
           src = ./.;
 
-          nativeBuildInputs = with pkgs; [
-            meson
+          buildInputs = with pkgs; [
+            gcc
             python3
             ninja
+            clang
+          ];
+
+          nativeBuildInputs = with pkgs; [
+            meson
             pkg-config
-            gcc
             SDL2
             SDL2_ttf
             SDL2_mixer
