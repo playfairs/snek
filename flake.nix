@@ -32,6 +32,9 @@
             meson
             ninja
             pkg-config
+            SDL2
+            SDL2_ttf
+            SDL2_mixer
           ];
         };
 
@@ -46,6 +49,9 @@
             pkgs.ninja
             pkgs.pkg-config
             pkgs.gcc
+            pkgs.sdl2
+            pkgs.sdl2_ttf
+            pkgs.sdl2_mixer
           ];
 
           buildPhase = ''
