@@ -36,6 +36,7 @@ jobs:
         run: |
           mkdir -p dist/package
           cp -L result/bin/* dist/package/
+          cp -r assets dist/package/
           tar -czf dist/snek-linux.tar.gz -C dist/package .
 
       - name: Upload Linux artifact
@@ -44,20 +45,101 @@ jobs:
           name: snek-linux-package
           path: dist/snek-linux.tar.gz
 
+  build-macos:
+    name: Build macOS binary
+    runs-on: macos-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          brew update
+          brew install meson ninja pkg-config sdl2 sdl2_ttf sdl2_mixer
+
+      - name: Build macOS binary
+        run: |
+          meson setup builddir --buildtype=release
+          meson compile -C builddir
+          mkdir -p dist/package
+          cp builddir/snek dist/package/
+          cp -r assets dist/package/
+          cd dist && zip -r snek-macos.zip package
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: snek-macos-package
+          path: dist/snek-macos.zip
+
+  build-windows:
+    name: Build Windows binary
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Setup MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-meson
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-pkg-config
+            mingw-w64-ucrt-x86_64-SDL2
+            mingw-w64-ucrt-x86_64-SDL2_ttf
+            mingw-w64-ucrt-x86_64-SDL2_mixer
+            mingw-w64-ucrt-x86_64-python
+            make
+
+      - name: Build Windows binary
+        shell: msys2 {0}
+        run: |
+          meson setup builddir --buildtype=release
+          meson compile -C builddir
+          mkdir -p dist/package
+          cp builddir/snek.exe dist/package/
+          cp -r assets dist/package/
+          cd dist && zip -r snek-windows.zip package
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: snek-windows-package
+          path: dist/snek-windows.zip
+
   release:
     name: Publish release package
-    needs: build-linux
+    needs: [build-linux, build-macos, build-windows]
     runs-on: ubuntu-latest
-    if: github.event_name == 'release'
+    if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/v')
     steps:
       - name: Download Linux artifact
         uses: actions/download-artifact@v4
         with:
           name: snek-linux-package
-          path: release-package
+          path: release-package/linux
 
-      - name: Upload release asset
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: snek-macos-package
+          path: release-package/macos
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: snek-windows-package
+          path: release-package/windows
+
+      - name: Upload release assets
         uses: softprops/action-gh-release@v1
         with:
-          files: release-package/snek-linux.tar.gz
+          files: |
+            release-package/linux/snek-linux.tar.gz
+            release-package/macos/snek-macos.zip
+            release-package/windows/snek-windows.zip
           overwrite: true
