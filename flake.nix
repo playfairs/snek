@@ -54,6 +54,7 @@
             ninja
             python3
             pkg-config
+            cmake
           ];
 
           meta = {
