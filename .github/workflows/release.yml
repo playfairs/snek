@@ -59,6 +59,5 @@ jobs:
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
         with:
-          files: release-package/dist/snek-linux.tar.gz
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          files: release-package/snek-linux.tar.gz
+          overwrite: true
