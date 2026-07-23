@@ -5,6 +5,8 @@ project('snek', 'c',
 )
 
 inc = include_directories('src')
+cc = meson.get_compiler('c')
+math_dep = cc.find_library('m', required: false)
 
 sdl2_dep = dependency('sdl2', required: false)
 if not sdl2_dep.found()
@@ -61,6 +63,7 @@ add_project_arguments('-Wall', '-Wextra', language: 'c')
 executable('snek', sources,
   include_directories: inc,
   dependencies: [sdl2_dep, sdl2_ttf_dep, sdl2_mixer_dep],
+  link_args: ['-lm'],
   install: true,
   install_dir: get_option('bindir'),
 )
