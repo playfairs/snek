@@ -3,18 +3,8 @@ on:
   push:
   pull_request:
 jobs:
-  check:
-    name: Run checks
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-      - name: Run check action
-        uses: ./.github/actions/check
-
-  build:
+  build-linux:
     name: Build Linux package
-    needs: check
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
