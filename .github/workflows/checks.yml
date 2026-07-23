@@ -27,7 +27,6 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          sudo apt-get update
           sudo apt-get install -y gcc meson ninja-build pkg-config libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev
 
       - name: Build app
