@@ -38,5 +38,5 @@ make install
 ## Running
 
 ```bash
-./build/snek
+./builddir/snek
 ```
