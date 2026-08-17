@@ -9,6 +9,56 @@ permissions:
   contents: write
 
 jobs:
+  build-linux-static:
+    name: Build Linux static tar.gz
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential pkg-config libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev
+
+      - name: Read version
+        id: version
+        run: |
+          APP_VERSION="$(grep -A5 '^\[project\]' version.toml | grep '^version' | sed -E 's/.*=\s*"([^"]+)".*/\1/')"
+          test -n "$APP_VERSION"
+          echo "app_version=$APP_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Build Linux static release
+        run: make clean linux-static
+
+      - name: Package Linux static release
+        run: |
+          mkdir -p dist linux-release
+          cp build/snek linux-release/snek
+          cp -R assets linux-release/assets
+          cp README.md linux-release/README.txt
+          tar -czf "dist/Snek-linux-${{ steps.version.outputs.app_version }}.tar.gz" -C linux-release .
+
+      - name: Upload Linux package
+        uses: actions/upload-artifact@v4
+        with:
+          name: Snek-linux-static-tarball
+          path: dist/Snek-linux-${{ steps.version.outputs.app_version }}.tar.gz
+          if-no-files-found: error
+
+      - name: Upload Linux package to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          UPLOAD_URL: ${{ github.event.release.upload_url }}
+        run: |
+          upload_url="${UPLOAD_URL%\{*}"
+          curl -L -X POST \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Content-Type: application/gzip" \
+            --data-binary @"dist/Snek-linux-${{ steps.version.outputs.app_version }}.tar.gz" \
+            "$upload_url?name=Snek-linux-${{ steps.version.outputs.app_version }}.tar.gz"
+
   build-pkg:
     name: Build macOS PKG
     runs-on: macos-latest
@@ -27,8 +77,8 @@ jobs:
           test -n "$APP_VERSION"
           echo "app_version=$APP_VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Build app
-        run: make clean all
+      - name: Build release app
+        run: make clean release
 
       - name: Create app bundle
         run: |
@@ -77,7 +127,7 @@ jobs:
           mkdir -p "$FRAMEWORKS"
 
           find_deps() {
-            otool -L "$1" | tail -n +2 | awk '{print $1}' | grep -E '^(/opt/homebrew|/usr/local)/.*\.dylib$' || true
+            otool -L "$1" | tail -n +2 | awk '{print $1}' | grep -E '^(\/opt\/homebrew|\/usr\/local)\/.*\.dylib$' || true
           }
 
           copy_lib() {
@@ -87,7 +137,7 @@ jobs:
               cp "$libpath" "$dest"
               install_name_tool -id "@rpath/$(basename "$libpath")" "$dest"
               for dep in $(find_deps "$dest"); do
-                if echo "$dep" | grep -E '^(/opt/homebrew|/usr/local)/.*\.dylib$' >/dev/null; then
+                if echo "$dep" | grep -E '^(\/opt\/homebrew|\/usr\/local)\/.*\.dylib$' >/dev/null; then
                   copy_lib "$dep"
                   install_name_tool -change "$dep" "@rpath/$(basename "$dep")" "$dest"
                 fi
@@ -148,8 +198,8 @@ jobs:
           test -n "$APP_VERSION"
           echo "app_version=$APP_VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Build app
-        run: make clean all
+      - name: Build release app
+        run: make clean release
 
       - name: Create app bundle
         run: |
@@ -198,7 +248,7 @@ jobs:
           mkdir -p "$FRAMEWORKS"
 
           find_deps() {
-            otool -L "$1" | tail -n +2 | awk '{print $1}' | grep -E '^(/opt/homebrew|/usr/local)/.*\.dylib$' || true
+            otool -L "$1" | tail -n +2 | awk '{print $1}' | grep -E '^(\/opt\/homebrew|\/usr\/local)\/.*\.dylib$' || true
           }
 
           copy_lib() {
@@ -208,7 +258,7 @@ jobs:
               cp "$libpath" "$dest"
               install_name_tool -id "@rpath/$(basename "$libpath")" "$dest"
               for dep in $(find_deps "$dest"); do
-                if echo "$dep" | grep -E '^(/opt/homebrew|/usr/local)/.*\.dylib$' >/dev/null; then
+                if echo "$dep" | grep -E '^(\/opt\/homebrew|\/usr\/local)\/.*\.dylib$' >/dev/null; then
                   copy_lib "$dep"
                   install_name_tool -change "$dep" "@rpath/$(basename "$dep")" "$dest"
                 fi
@@ -254,7 +304,7 @@ jobs:
             "$upload_url?name=Snek.dmg"
 
   build-exe:
-    name: Build Windows EXE
+    name: Build Windows static ZIP
     runs-on: windows-latest
 
     defaults:
@@ -278,25 +328,13 @@ jobs:
             mingw-w64-x86_64-SDL2_ttf
             mingw-w64-x86_64-SDL2_mixer
 
-      - name: Build executable
-        run: make clean all TARGET=build/Snek.exe
-
-      - name: Collect Windows package
-        run: |
-          mkdir -p package/windows
-          cp build/Snek.exe package/windows/Snek.exe
-          cp -R assets package/windows/assets
-          ldd build/Snek.exe | awk '{ for (i = 1; i <= NF; i++) if ($i ~ /^\/mingw64\/bin\/.*\.dll$/) print $i }' | xargs -r -I{} cp "{}" package/windows/
+      - name: Build Windows static release
+        run: make clean windows
 
       - name: Create Windows release archive
         run: |
           mkdir -p dist
-          if command -v zip >/dev/null 2>&1; then
-            (cd package && zip -r ../dist/Snek-windows.zip windows)
-          else
-            pacman -S --noconfirm zip
-            (cd package && zip -r ../dist/Snek-windows.zip windows)
-          fi
+          zip -jr dist/Snek-windows.zip release/windows
 
       - name: Upload Windows package
         uses: actions/upload-artifact@v4
